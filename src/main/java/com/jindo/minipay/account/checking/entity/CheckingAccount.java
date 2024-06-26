@@ -1,12 +1,9 @@
-package com.jindo.minipay.account.entity;
+package com.jindo.minipay.account.checking.entity;
 
-import com.jindo.minipay.account.entity.type.AccountType;
 import com.jindo.minipay.global.entity.BaseTimeEntity;
 import com.jindo.minipay.member.entity.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,7 +19,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Account extends BaseTimeEntity {
+public class CheckingAccount extends BaseTimeEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,7 +34,7 @@ public class Account extends BaseTimeEntity {
   @JoinColumn(nullable = false)
   private Member owner;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private AccountType type;
+  public void charge(long amount) {
+    balance += amount;
+  }
 }
