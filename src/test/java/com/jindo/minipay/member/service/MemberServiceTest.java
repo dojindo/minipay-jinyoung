@@ -1,15 +1,15 @@
 package com.jindo.minipay.member.service;
 
-import static com.jindo.minipay.account.constant.AccountConstants.MAIN_ACCOUNT_PREFIX;
-import static com.jindo.minipay.account.entity.type.AccountType.MAIN;
+import static com.jindo.minipay.account.common.constant.AccountConstants.CHECKING_ACCOUNT_PREFIX;
+import static com.jindo.minipay.account.common.type.AccountType.CHECKING;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.jindo.minipay.account.repository.AccountRepository;
-import com.jindo.minipay.account.util.AccountNumberCreator;
+import com.jindo.minipay.account.checking.repository.CheckingAccountRepository;
+import com.jindo.minipay.account.common.util.AccountNumberCreator;
 import com.jindo.minipay.global.exception.CustomException;
 import com.jindo.minipay.global.exception.ErrorCode;
 import com.jindo.minipay.member.dto.MemberSignupDto;
@@ -30,7 +30,7 @@ class MemberServiceTest {
   MemberRepository memberRepository;
 
   @Mock
-  AccountRepository accountRepository;
+  CheckingAccountRepository checkingAccountRepository;
 
   @Mock
   AccountNumberCreator accountNumberCreator;
@@ -76,13 +76,13 @@ class MemberServiceTest {
       // when
       when(memberRepository.save(any())).thenReturn(owner);
 
-      String accountNumber = MAIN_ACCOUNT_PREFIX + "12345678";
-      when(accountNumberCreator.create(MAIN)).thenReturn(accountNumber);
+      String accountNumber = CHECKING_ACCOUNT_PREFIX + "12345678";
+      when(accountNumberCreator.create(CHECKING)).thenReturn(accountNumber);
 
       memberService.signup(memberSignupDto);
 
       // then
-      verify(accountRepository).save(any());
+      verify(checkingAccountRepository).save(any());
     }
   }
 }
