@@ -7,6 +7,7 @@ import static com.jindo.minipay.account.common.type.AccountType.SAVING;
 
 import com.jindo.minipay.account.checking.repository.CheckingAccountRepository;
 import com.jindo.minipay.account.common.type.AccountType;
+import com.jindo.minipay.account.savings.repository.SavingAccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 public class AccountNumberCreator {
 
   private final CheckingAccountRepository checkingAccountRepository;
+  private final SavingAccountRepository savingAccountRepository;
 
   public String create(AccountType accountType) {
     StringBuilder sb = new StringBuilder();
@@ -29,7 +31,12 @@ public class AccountNumberCreator {
       sb.append((int) (Math.random() * 10));
     }
 
-    boolean exists = checkingAccountRepository.existsByAccountNumber(sb.toString());
+    boolean exists = false;
+    if (accountType == CHECKING) {
+      exists = checkingAccountRepository.existsByAccountNumber(sb.toString());
+    } else if (accountType == SAVING) {
+      exists = savingAccountRepository.existsByAccountNumber(sb.toString());
+    }
 
     if (exists) {
       return create(accountType);
