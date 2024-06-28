@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberSignupDto {
+public class MemberSignupRequest {
 
   @NotBlank(message = "아이디를 입력해주세요.")
   private String username;

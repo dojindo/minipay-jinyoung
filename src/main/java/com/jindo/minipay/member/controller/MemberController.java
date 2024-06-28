@@ -2,7 +2,7 @@ package com.jindo.minipay.member.controller;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_CREATED;
 
-import com.jindo.minipay.member.dto.MemberSignupDto;
+import com.jindo.minipay.member.dto.MemberSignupRequest;
 import com.jindo.minipay.member.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +20,8 @@ public class MemberController {
   private final MemberService memberService;
 
   @PostMapping
-  public ResponseEntity<?> signup(@RequestBody @Valid MemberSignupDto memberSignupDto) {
-    memberService.signup(memberSignupDto);
+  public ResponseEntity<?> signup(@RequestBody @Valid MemberSignupRequest memberSignupRequest) {
+    memberService.signup(memberSignupRequest);
     return ResponseEntity.status(SC_CREATED).build();
   }
 }

@@ -4,7 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jindo.minipay.member.dto.MemberSignupDto;
+import com.jindo.minipay.member.dto.MemberSignupRequest;
 import com.jindo.minipay.member.service.MemberService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -37,7 +37,7 @@ class MemberControllerTest {
     @DisplayName("실패 - 유저네임이 빈 값인 경우")
     void signup_empty_username() throws Exception {
       // given
-      MemberSignupDto memberSignupDto = MemberSignupDto.builder()
+      MemberSignupRequest memberSignupRequest = MemberSignupRequest.builder()
           .username("")
           .password("1q2w3e4r!")
           .build();
@@ -46,7 +46,7 @@ class MemberControllerTest {
       // then
       mockMvc.perform(post(URI)
               .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsString(memberSignupDto)))
+              .content(objectMapper.writeValueAsString(memberSignupRequest)))
           .andExpect(status().isBadRequest());
     }
 
@@ -54,7 +54,7 @@ class MemberControllerTest {
     @DisplayName("실패 - 패스워드가 빈 값인 경우")
     void signup_empty_password() throws Exception {
       // given
-      MemberSignupDto memberSignupDto = MemberSignupDto.builder()
+      MemberSignupRequest memberSignupRequest = MemberSignupRequest.builder()
           .username("username1")
           .password("")
           .build();
@@ -63,7 +63,7 @@ class MemberControllerTest {
       // then
       mockMvc.perform(post(URI)
               .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsString(memberSignupDto)))
+              .content(objectMapper.writeValueAsString(memberSignupRequest)))
           .andExpect(status().isBadRequest());
     }
 
@@ -71,7 +71,7 @@ class MemberControllerTest {
     @DisplayName("성공")
     void signup() throws Exception {
       // given
-      MemberSignupDto memberSignupDto = MemberSignupDto.builder()
+      MemberSignupRequest memberSignupRequest = MemberSignupRequest.builder()
           .username("username1")
           .password("1q2w3e4r!")
           .build();
@@ -80,7 +80,7 @@ class MemberControllerTest {
       // then
       mockMvc.perform(post(URI)
               .contentType(MediaType.APPLICATION_JSON)
-              .content(objectMapper.writeValueAsString(memberSignupDto)))
+              .content(objectMapper.writeValueAsString(memberSignupRequest)))
           .andExpect(status().isCreated());
     }
   }

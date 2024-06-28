@@ -12,7 +12,7 @@ import com.jindo.minipay.account.checking.repository.CheckingAccountRepository;
 import com.jindo.minipay.account.common.util.AccountNumberCreator;
 import com.jindo.minipay.global.exception.CustomException;
 import com.jindo.minipay.global.exception.ErrorCode;
-import com.jindo.minipay.member.dto.MemberSignupDto;
+import com.jindo.minipay.member.dto.MemberSignupRequest;
 import com.jindo.minipay.member.entity.Member;
 import com.jindo.minipay.member.repository.MemberRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -42,7 +42,7 @@ class MemberServiceTest {
   @DisplayName("회원 등록 메서드")
   class MemberSignupMethod {
 
-    MemberSignupDto memberSignupDto = MemberSignupDto.builder()
+    MemberSignupRequest memberSignupRequest = MemberSignupRequest.builder()
         .username("username1")
         .password("1q2w3e4r!")
         .build();
@@ -53,10 +53,10 @@ class MemberServiceTest {
       // given
 
       // when
-      given(memberRepository.existsByUsername(memberSignupDto.getUsername())).willReturn(true);
+      given(memberRepository.existsByUsername(memberSignupRequest.getUsername())).willReturn(true);
 
       // then
-      assertThatThrownBy(() -> memberService.signup(memberSignupDto))
+      assertThatThrownBy(() -> memberService.signup(memberSignupRequest))
           .isInstanceOf(CustomException.class)
           .hasMessage(ErrorCode.ALREADY_EXISTS_USERNAME.getMessage());
     }
@@ -65,12 +65,12 @@ class MemberServiceTest {
     @DisplayName("성공 - 회원과 메인계좌가 생성된다.")
     void signup() {
       // given
-      given(memberRepository.existsByUsername(memberSignupDto.getUsername())).willReturn(false);
+      given(memberRepository.existsByUsername(memberSignupRequest.getUsername())).willReturn(false);
 
       Member owner = Member.builder()
           .id(1L)
-          .username(memberSignupDto.getUsername())
-          .password(memberSignupDto.getPassword())
+          .username(memberSignupRequest.getUsername())
+          .password(memberSignupRequest.getPassword())
           .build();
 
       // when
@@ -79,7 +79,7 @@ class MemberServiceTest {
       String accountNumber = CHECKING_ACCOUNT_PREFIX + "12345678";
       when(accountNumberCreator.create(CHECKING)).thenReturn(accountNumber);
 
-      memberService.signup(memberSignupDto);
+      memberService.signup(memberSignupRequest);
 
       // then
       verify(checkingAccountRepository).save(any());

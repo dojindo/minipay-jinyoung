@@ -7,7 +7,7 @@ import com.jindo.minipay.account.checking.entity.CheckingAccount;
 import com.jindo.minipay.account.checking.repository.CheckingAccountRepository;
 import com.jindo.minipay.account.common.util.AccountNumberCreator;
 import com.jindo.minipay.global.exception.CustomException;
-import com.jindo.minipay.member.dto.MemberSignupDto;
+import com.jindo.minipay.member.dto.MemberSignupRequest;
 import com.jindo.minipay.member.entity.Member;
 import com.jindo.minipay.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,14 +23,14 @@ public class MemberService {
   private final AccountNumberCreator accountNumberCreator;
 
   @Transactional
-  public void signup(MemberSignupDto memberSignupDto) {
-    if (memberRepository.existsByUsername(memberSignupDto.getUsername())) {
+  public void signup(MemberSignupRequest memberSignupRequest) {
+    if (memberRepository.existsByUsername(memberSignupRequest.getUsername())) {
       throw new CustomException(ALREADY_EXISTS_USERNAME);
     }
 
     Member member = Member.builder()
-        .username(memberSignupDto.getUsername())
-        .password(memberSignupDto.getPassword())
+        .username(memberSignupRequest.getUsername())
+        .password(memberSignupRequest.getPassword())
         .build();
 
     Member owner = memberRepository.save(member);
