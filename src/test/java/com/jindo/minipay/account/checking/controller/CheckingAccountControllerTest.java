@@ -5,7 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jindo.minipay.account.checking.dto.AccountChargeRequest;
+import com.jindo.minipay.account.checking.dto.CheckingAccountChargeRequest;
 import com.jindo.minipay.account.checking.service.CheckingAccountService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -38,7 +38,7 @@ class CheckingAccountControllerTest {
     @DisplayName("실패 - 회원아이디가 null 값인 경우")
     void charge_null_memberId() throws Exception {
       // given
-      AccountChargeRequest request = new AccountChargeRequest(null, 10_000L);
+      CheckingAccountChargeRequest request = new CheckingAccountChargeRequest(null, 10_000L);
 
       // when
       doNothing().when(checkingAccountService).charge(request);
@@ -53,7 +53,7 @@ class CheckingAccountControllerTest {
     @DisplayName("실패 - 충전금액이 음수 값인 경우")
     void charge_null_amount() throws Exception {
       // given
-      AccountChargeRequest request = new AccountChargeRequest(1L, -10_000L);
+      CheckingAccountChargeRequest request = new CheckingAccountChargeRequest(1L, -10_000L);
 
       // when
       doNothing().when(checkingAccountService).charge(request);
@@ -68,7 +68,7 @@ class CheckingAccountControllerTest {
     @DisplayName("성공")
     void charge() throws Exception {
       // given
-      AccountChargeRequest request = new AccountChargeRequest(1L, 10_000L);
+      CheckingAccountChargeRequest request = new CheckingAccountChargeRequest(1L, 10_000L);
 
       // when
       doNothing().when(checkingAccountService).charge(request);

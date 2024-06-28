@@ -1,6 +1,6 @@
 package com.jindo.minipay.account.checking.controller;
 
-import com.jindo.minipay.account.checking.dto.AccountChargeRequest;
+import com.jindo.minipay.account.checking.dto.CheckingAccountChargeRequest;
 import com.jindo.minipay.account.checking.service.CheckingAccountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ public class CheckingAccountController {
   private final CheckingAccountService checkingAccountService;
 
   @PostMapping("/charge")
-  public ResponseEntity<?> charge(@RequestBody @Valid AccountChargeRequest request) {
+  public ResponseEntity<?> charge(@RequestBody @Valid CheckingAccountChargeRequest request) {
     checkingAccountService.charge(request);
     return ResponseEntity.ok().build();
   }

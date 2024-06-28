@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountChargeRequest {
+public class CheckingAccountChargeRequest {
 
   @NotNull
   private Long memberId;

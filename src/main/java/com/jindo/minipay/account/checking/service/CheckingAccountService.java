@@ -4,7 +4,7 @@ import static com.jindo.minipay.account.common.constant.AccountConstants.ACCOUNT
 import static com.jindo.minipay.global.exception.ErrorCode.ACCOUNT_NOT_FOUND;
 import static com.jindo.minipay.global.exception.ErrorCode.CHARGE_LIMIT_EXCEEDED;
 
-import com.jindo.minipay.account.checking.dto.AccountChargeRequest;
+import com.jindo.minipay.account.checking.dto.CheckingAccountChargeRequest;
 import com.jindo.minipay.account.checking.entity.ChargeAmount;
 import com.jindo.minipay.account.checking.entity.CheckingAccount;
 import com.jindo.minipay.account.checking.repository.ChargeAmountRepository;
@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -24,10 +25,10 @@ public class CheckingAccountService {
 
   private final ChargeAmountRepository chargeAmountRepository;
 
-  @Transactional
-  public void charge(AccountChargeRequest request) {
+  @Transactional(isolation = Isolation.READ_COMMITTED)
+  public void charge(CheckingAccountChargeRequest request) {
     CheckingAccount checkingAccount = checkingAccountRepository
-        .findByOwnerId(request.getMemberId())
+        .findByOwnerIdForUpdate(request.getMemberId())
         .orElseThrow(() -> new CustomException(ACCOUNT_NOT_FOUND));
 
     long chargeAmount = chargeAmountRepository.findByMemberId(request.getMemberId())

@@ -9,7 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.jindo.minipay.account.checking.dto.AccountChargeRequest;
+import com.jindo.minipay.account.checking.dto.CheckingAccountChargeRequest;
 import com.jindo.minipay.account.checking.entity.ChargeAmount;
 import com.jindo.minipay.account.checking.entity.CheckingAccount;
 import com.jindo.minipay.account.checking.repository.ChargeAmountRepository;
@@ -43,7 +43,7 @@ class CheckingAccountServiceTest {
   @DisplayName("메인 계좌 충전")
   class CheckingAccountChargeMethod {
 
-    AccountChargeRequest request = new AccountChargeRequest(1L, 10_000L);
+    CheckingAccountChargeRequest request = new CheckingAccountChargeRequest(1L, 10_000L);
 
     Member owner = Member.builder()
         .id(request.getMemberId())
@@ -60,7 +60,7 @@ class CheckingAccountServiceTest {
     @DisplayName("실패 - 없는 계좌일 때")
     void charge_not_found_checking_account() {
       // given
-      given(checkingAccountRepository.findByOwnerId(request.getMemberId()))
+      given(checkingAccountRepository.findByOwnerIdForUpdate(request.getMemberId()))
           .willThrow(new CustomException(ErrorCode.ACCOUNT_NOT_FOUND));
 
       // when
@@ -76,7 +76,7 @@ class CheckingAccountServiceTest {
       // given
       ChargeAmount exceedAmount = new ChargeAmount(owner.getId(), ACCOUNT_CHARGE_LIMIT);
 
-      when(checkingAccountRepository.findByOwnerId(request.getMemberId())).thenReturn(
+      when(checkingAccountRepository.findByOwnerIdForUpdate(request.getMemberId())).thenReturn(
           Optional.of(checkingAccount));
 
       when(chargeAmountRepository.findByMemberId(request.getMemberId())).thenReturn(
@@ -95,7 +95,7 @@ class CheckingAccountServiceTest {
       // given
       ChargeAmount chargeAmount = new ChargeAmount(owner.getId(), 10_000L);
 
-      when(checkingAccountRepository.findByOwnerId(request.getMemberId())).thenReturn(
+      when(checkingAccountRepository.findByOwnerIdForUpdate(request.getMemberId())).thenReturn(
           Optional.of(checkingAccount));
 
       when(chargeAmountRepository.findByMemberId(request.getMemberId())).thenReturn(
