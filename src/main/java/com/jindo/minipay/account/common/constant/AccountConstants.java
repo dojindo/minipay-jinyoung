@@ -10,4 +10,5 @@ public class AccountConstants {
 
   public static final String CHARGE_AMOUNT_KEY = "chargeAmount:";
 
+  private AccountConstants() {}
 }
