@@ -20,7 +20,6 @@ spring:
       host: localhost
       port: 6379
 
-
 sonar:
   organization: dojindo
   projectKey: dojindo_minipay-jinyoung
