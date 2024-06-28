@@ -39,7 +39,7 @@ jacocoTestReport {
 }
 
 // sonarCloud
-sonar {
+sonarqube {
 	properties {
 		property "sonar.projectKey", "dojindo_minipay-jinyoung"
 		property "sonar.organization", "dojindo"
