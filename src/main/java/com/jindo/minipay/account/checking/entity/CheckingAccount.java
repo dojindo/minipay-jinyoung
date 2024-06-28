@@ -38,4 +38,8 @@ public class CheckingAccount extends BaseTimeEntity {
   public void charge(long amount) {
     balance += amount;
   }
+
+  public void withdraw(long amount) {
+    this.balance -= amount;
+  }
 }
