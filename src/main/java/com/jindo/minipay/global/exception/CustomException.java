@@ -6,6 +6,7 @@ import lombok.Getter;
 public class CustomException extends RuntimeException {
 
   private final int statusCode;
+
   public CustomException(ErrorCode errorCode) {
     super(errorCode.getMessage());
     statusCode = errorCode.getCode();

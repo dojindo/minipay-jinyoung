@@ -21,6 +21,7 @@ public class ChargeAmountRepository {
   }
 
   public Optional<ChargeAmount> findByMemberId(Long memberId) {
-    return Optional.ofNullable((ChargeAmount) redisTemplate.opsForValue().get(AccountConstants.CHARGE_AMOUNT_KEY + ":" + memberId));
+    return Optional.ofNullable((ChargeAmount) redisTemplate.opsForValue()
+        .get(AccountConstants.CHARGE_AMOUNT_KEY + ":" + memberId));
   }
 }
