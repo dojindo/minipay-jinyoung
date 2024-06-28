@@ -1,11 +1,14 @@
 package com.jindo.minipay.account.savings.controller;
 
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jindo.minipay.account.savings.dto.SavingAccountCreateRequest;
+import com.jindo.minipay.account.savings.dto.SavingAccountCreateResponse;
+import com.jindo.minipay.account.savings.dto.SavingAccountDepositRequest;
+import com.jindo.minipay.account.savings.dto.SavingAccountDepositResponse;
 import com.jindo.minipay.account.savings.service.SavingAccountService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -39,9 +42,9 @@ class SavingAccountControllerTest {
     void create_null_memberId() throws Exception {
       // given
       SavingAccountCreateRequest request = new SavingAccountCreateRequest(null);
-
+      SavingAccountCreateResponse response = new SavingAccountCreateResponse(1L);
       // when
-      doNothing().when(savingAccountService).create(request);
+      when(savingAccountService.create(request)).thenReturn(response);
       // then
       mockMvc.perform(post(URI)
               .contentType(MediaType.APPLICATION_JSON)
@@ -54,14 +57,78 @@ class SavingAccountControllerTest {
     void charge() throws Exception {
       // given
       SavingAccountCreateRequest request = new SavingAccountCreateRequest(1L);
-
+      SavingAccountCreateResponse response = new SavingAccountCreateResponse(1L);
       // when
-      doNothing().when(savingAccountService).create(request);
+      when(savingAccountService.create(request)).thenReturn(response);
       // then
       mockMvc.perform(post(URI)
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isCreated());
+    }
+  }
+
+  @Nested
+  @DisplayName("적금 계좌 입금")
+  class SavingAccountDepositMethod {
+
+    @Test
+    @DisplayName("실패 - ownerId가 null인 경우")
+    void deposit_null_ownerId() throws Exception {
+      // given
+      SavingAccountDepositRequest request = new SavingAccountDepositRequest(null, 1L, 10_000L);
+
+      // when
+      // then
+      mockMvc.perform(post(URI + "/deposit")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("실패 - savingAccountId가 null인 경우")
+    void deposit_null_savingAccountId() throws Exception {
+      // given
+      SavingAccountDepositRequest request = new SavingAccountDepositRequest(1L, null, 10_000L);
+
+      // when
+      // then
+      mockMvc.perform(post(URI + "/deposit")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("실패 - 입금금액이 음수인 경우")
+    void deposit_negative_amount() throws Exception {
+      // given
+      SavingAccountDepositRequest request = new SavingAccountDepositRequest(1L, 1L, -10_000L);
+
+      // when
+      // then
+      mockMvc.perform(post(URI + "/deposit")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("성공")
+    void deposit() throws Exception {
+      // given
+      SavingAccountDepositRequest request = new SavingAccountDepositRequest(1L, 1L, 10_000L);
+
+      SavingAccountDepositResponse response = new SavingAccountDepositResponse(10_000L);
+
+      // when
+      when(savingAccountService.deposit(request)).thenReturn(response);
+      // then
+      mockMvc.perform(post(URI + "/deposit")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isOk());
     }
   }
 }
