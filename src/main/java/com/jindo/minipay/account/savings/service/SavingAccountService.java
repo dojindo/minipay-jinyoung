@@ -33,9 +33,8 @@ public class SavingAccountService {
 
 
   public SavingAccountCreateResponse create(SavingAccountCreateRequest request) {
-    Member owner = memberRepository.findById(request.getMemberId()).orElseThrow(
-        () -> new CustomException(MEMBER_NOT_FOUND)
-    );
+    Member owner = memberRepository.findById(request.getMemberId())
+        .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
     SavingAccount savingAccount = SavingAccount.builder()
         .owner(owner)
