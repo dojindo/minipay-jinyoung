@@ -25,6 +25,13 @@ jobs:
           container port: 3306
           mysql database: 'minipay'
           mysql root password: ${{ secrets.DB_PASSWORD }}
+      - name: Setup Redis
+        uses: actions/checkout@v4
+        uses: shogo82148/actions-setup-redis@v1
+        with:
+          redis-version: "7.x"
+        run: redis-cli ping
+
       - name: Cache SonarCloud packages
         uses: actions/cache@v3
         with:
