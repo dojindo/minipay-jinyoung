@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 import com.jindo.minipay.account.checking.dto.CheckingAccountChargeRequest;
 import com.jindo.minipay.account.checking.entity.ChargeAmount;
 import com.jindo.minipay.account.checking.entity.CheckingAccount;
-import com.jindo.minipay.account.checking.repository.ChargeAmountRepository;
+import com.jindo.minipay.account.checking.repository.redis.ChargeAmountRepository;
 import com.jindo.minipay.account.checking.repository.CheckingAccountRepository;
 import com.jindo.minipay.global.exception.CustomException;
 import com.jindo.minipay.global.exception.ErrorCode;
