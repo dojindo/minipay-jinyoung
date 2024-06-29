@@ -1,6 +1,7 @@
 package com.jindo.minipay.account.savings.service;
 
 import static com.jindo.minipay.global.exception.ErrorCode.ACCOUNT_NOT_FOUND;
+import static com.jindo.minipay.global.exception.ErrorCode.BALANCE_NOT_ENOUGH;
 import static com.jindo.minipay.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -56,8 +57,8 @@ class SavingAccountServiceTest {
     @DisplayName("실패 - 존재히지 않는 회원일 경우")
     void create_not_found_member() {
       // given
-      given(memberRepository.findById(request.getMemberId())).willThrow(
-          new CustomException(MEMBER_NOT_FOUND));
+      given(memberRepository.findById(request.getMemberId())).willReturn(
+          Optional.empty());
 
       // when
       // then
@@ -115,6 +116,12 @@ class SavingAccountServiceTest {
         .owner(owner)
         .build();
 
+    CheckingAccount notEnoughCheckingAccount = CheckingAccount.builder()
+        .id(1L)
+        .balance(0L)
+        .owner(owner)
+        .build();
+
     @Test
     @DisplayName("실패 - 존재히지 않는 적금 계좌인 경우")
     void deposit_not_found_saving_account() {
@@ -165,6 +172,26 @@ class SavingAccountServiceTest {
       assertThatThrownBy(() -> savingAccountService.deposit(request))
           .isInstanceOf(CustomException.class)
           .hasMessage(ACCOUNT_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("실패 - 메인 계좌에 잔액이 부족한 경우")
+    void deposit_not_found_balance_not_enough() {
+
+      // given
+      given(savingAccountRepository.findByIdForUpdate(request.getSavingAccountId())).willReturn(
+          Optional.of(savingAccount));
+
+      given(memberRepository.existsById(request.getOwnerId())).willReturn(true);
+
+      given(checkingAccountRepository.findByOwnerIdForUpdate(request.getOwnerId())).willReturn(
+          Optional.of(notEnoughCheckingAccount));
+
+      // when
+      // then
+      assertThatThrownBy(() -> savingAccountService.deposit(request))
+          .isInstanceOf(CustomException.class)
+          .hasMessage(BALANCE_NOT_ENOUGH.getMessage());
     }
 
     @Test
