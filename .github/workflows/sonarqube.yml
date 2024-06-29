@@ -24,7 +24,9 @@ jobs:
           host port: 3306
           container port: 3306
           mysql database: 'minipay'
-          mysql root password: ${{ secrets.DB_PASSWORD }}
+          mysql user: 'topy'
+          mysql password: ${{ secrets.DB_PASSWORD }}
+
       - name: Setup Redis
         uses: shogo82148/actions-setup-redis@v1
         with:
