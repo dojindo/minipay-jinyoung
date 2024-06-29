@@ -1,4 +1,4 @@
-package com.jindo.minipay.account.checking.repository;
+package com.jindo.minipay.account.checking.repository.redis;
 
 import com.jindo.minipay.account.checking.entity.ChargeAmount;
 import com.jindo.minipay.account.common.constant.AccountConstants;
@@ -16,12 +16,12 @@ public class ChargeAmountRepository {
 
   public void save(Long memberId, long amount, Duration ttl) {
     ChargeAmount chargeAmount = new ChargeAmount(memberId, amount);
-    String key = AccountConstants.CHARGE_AMOUNT_KEY + ":" + memberId;
+    String key = AccountConstants.CHARGE_AMOUNT_KEY + memberId;
     redisTemplate.opsForValue().set(key, chargeAmount, ttl);
   }
 
   public Optional<ChargeAmount> findByMemberId(Long memberId) {
     return Optional.ofNullable((ChargeAmount) redisTemplate.opsForValue()
-        .get(AccountConstants.CHARGE_AMOUNT_KEY + ":" + memberId));
+        .get(AccountConstants.CHARGE_AMOUNT_KEY + memberId));
   }
 }
