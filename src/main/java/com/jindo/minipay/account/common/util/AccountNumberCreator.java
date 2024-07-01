@@ -1,7 +1,5 @@
 package com.jindo.minipay.account.common.util;
 
-import static com.jindo.minipay.account.common.constant.AccountConstants.CHECKING_ACCOUNT_PREFIX;
-import static com.jindo.minipay.account.common.constant.AccountConstants.SAVING_ACCOUNT_PREFIX;
 import static com.jindo.minipay.account.common.type.AccountType.CHECKING;
 import static com.jindo.minipay.account.common.type.AccountType.SAVING;
 
@@ -21,11 +19,7 @@ public class AccountNumberCreator {
   public String create(AccountType accountType) {
     StringBuilder sb = new StringBuilder();
 
-    if (accountType == CHECKING) {
-      sb.append(CHECKING_ACCOUNT_PREFIX);
-    } else if (accountType == SAVING) {
-      sb.append(SAVING_ACCOUNT_PREFIX);
-    }
+    sb.append(accountType.getCode());
 
     for (int i = 0; i < 8; i++) {
       sb.append((int) (Math.random() * 10));
