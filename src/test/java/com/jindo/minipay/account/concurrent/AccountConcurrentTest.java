@@ -70,7 +70,7 @@ public class AccountConcurrentTest {
 
     // 적금 계좌 충전 request
     SavingAccountDepositRequest depositRequest =
-        new SavingAccountDepositRequest(owner.getId(), savingAccountCreateResponse.getId(),
+        new SavingAccountDepositRequest(owner.getId(), savingAccountCreateResponse.getSavingAccountId(),
             10_000L);
 
     int nThreads = 10;
@@ -94,7 +94,7 @@ public class AccountConcurrentTest {
     CheckingAccount checkingAccount = checkingAccountRepository.findById(
         savedCheckingAccount.getId()).get();
     SavingAccount savingAccount = savingAccountRepository.findById(
-        savingAccountCreateResponse.getId()).get();
+        savingAccountCreateResponse.getSavingAccountId()).get();
     assertThat(checkingAccount.getBalance()).isEqualTo(100_000L);
     assertThat(savingAccount.getAmount()).isEqualTo(50_000L);
   }

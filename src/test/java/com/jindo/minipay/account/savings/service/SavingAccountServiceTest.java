@@ -14,6 +14,7 @@ import com.jindo.minipay.account.checking.entity.CheckingAccount;
 import com.jindo.minipay.account.checking.repository.CheckingAccountRepository;
 import com.jindo.minipay.account.common.util.AccountNumberCreator;
 import com.jindo.minipay.account.savings.dto.SavingAccountCreateRequest;
+import com.jindo.minipay.account.savings.dto.SavingAccountCreateResponse;
 import com.jindo.minipay.account.savings.dto.SavingAccountDepositRequest;
 import com.jindo.minipay.account.savings.entity.SavingAccount;
 import com.jindo.minipay.account.savings.repository.SavingAccountRepository;
@@ -21,6 +22,7 @@ import com.jindo.minipay.global.exception.CustomException;
 import com.jindo.minipay.member.entity.Member;
 import com.jindo.minipay.member.repository.MemberRepository;
 import java.util.Optional;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -87,10 +89,11 @@ class SavingAccountServiceTest {
           savingAccount);
 
       // when
-      savingAccountService.create(request);
+      SavingAccountCreateResponse response = savingAccountService.create(request);
 
       // then
       verify(savingAccountRepository, times(1)).save(any(SavingAccount.class));
+      Assertions.assertThat(response.getSavingAccountId()).isEqualTo(1L);
     }
   }
 

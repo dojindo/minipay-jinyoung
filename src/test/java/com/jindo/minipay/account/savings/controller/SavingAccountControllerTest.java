@@ -1,7 +1,12 @@
 package com.jindo.minipay.account.savings.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,7 +49,7 @@ class SavingAccountControllerTest {
       SavingAccountCreateRequest request = new SavingAccountCreateRequest(null);
       SavingAccountCreateResponse response = new SavingAccountCreateResponse(1L);
       // when
-      when(savingAccountService.create(request)).thenReturn(response);
+      when(savingAccountService.create(any())).thenReturn(response);
       // then
       mockMvc.perform(post(URI)
               .contentType(MediaType.APPLICATION_JSON)
@@ -54,17 +59,18 @@ class SavingAccountControllerTest {
 
     @Test
     @DisplayName("성공")
-    void charge() throws Exception {
+    void create() throws Exception {
       // given
       SavingAccountCreateRequest request = new SavingAccountCreateRequest(1L);
       SavingAccountCreateResponse response = new SavingAccountCreateResponse(1L);
+      given(savingAccountService.create(any())).willReturn(response);
+
       // when
-      when(savingAccountService.create(request)).thenReturn(response);
       // then
       mockMvc.perform(post(URI)
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
-          .andExpect(status().isCreated());
+          .andExpect(status().isCreated()).andDo(print());
     }
   }
 
@@ -123,7 +129,7 @@ class SavingAccountControllerTest {
       SavingAccountDepositResponse response = new SavingAccountDepositResponse(10_000L);
 
       // when
-      when(savingAccountService.deposit(request)).thenReturn(response);
+      when(savingAccountService.deposit(any())).thenReturn(response);
       // then
       mockMvc.perform(post(URI + "/deposit")
               .contentType(MediaType.APPLICATION_JSON)
