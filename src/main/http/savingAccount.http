@@ -1,0 +1,7 @@
+### 적금 계좌 생성
+POST http://localhost:8080/saving
+Content-Type: application/json
+
+{
+  "memberId": 1
+}
