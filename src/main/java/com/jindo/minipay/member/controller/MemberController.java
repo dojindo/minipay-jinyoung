@@ -20,8 +20,7 @@ public class MemberController {
   private final MemberService memberService;
 
   @PostMapping
-  public ResponseEntity<?> signup(@RequestBody @Valid MemberSignupRequest memberSignupRequest) {
-    memberService.signup(memberSignupRequest);
-    return ResponseEntity.status(SC_CREATED).build();
+  public ResponseEntity<Long> signup(@RequestBody @Valid MemberSignupRequest memberSignupRequest) {
+    return ResponseEntity.status(SC_CREATED).body(memberService.signup(memberSignupRequest));
   }
 }

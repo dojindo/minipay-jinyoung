@@ -23,15 +23,12 @@ public class MemberService {
   private final AccountNumberCreator accountNumberCreator;
 
   @Transactional
-  public void signup(MemberSignupRequest memberSignupRequest) {
+  public Long signup(MemberSignupRequest memberSignupRequest) {
     if (memberRepository.existsByUsername(memberSignupRequest.getUsername())) {
       throw new CustomException(ALREADY_EXISTS_USERNAME);
     }
 
-    Member member = Member.builder()
-        .username(memberSignupRequest.getUsername())
-        .password(memberSignupRequest.getPassword())
-        .build();
+    Member member = memberSignupRequest.toEntity();
 
     Member owner = memberRepository.save(member);
 
@@ -42,5 +39,6 @@ public class MemberService {
         .build();
 
     checkingAccountRepository.save(checkingAccount);
+    return owner.getId();
   }
 }
