@@ -1,5 +1,7 @@
 package com.jindo.minipay.account.common.util;
 
+import static com.jindo.minipay.account.common.type.AccountType.CHECKING;
+import static com.jindo.minipay.account.common.type.AccountType.SAVING;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -7,8 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.jindo.minipay.account.checking.repository.CheckingAccountRepository;
-import com.jindo.minipay.account.common.constant.AccountConstants;
-import com.jindo.minipay.account.common.type.AccountType;
 import com.jindo.minipay.account.savings.repository.SavingAccountRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,10 +36,10 @@ class AccountNumberCreatorTest {
     when(checkingAccountRepository.existsByAccountNumber(any())).thenReturn(false);
 
     // when
-    String accountNumber = accountNumberCreator.create(AccountType.CHECKING);
+    String accountNumber = accountNumberCreator.create(CHECKING);
 
     // then
-    assertThat(accountNumber.substring(0, 4)).isEqualTo(AccountConstants.CHECKING_ACCOUNT_PREFIX);
+    assertThat(accountNumber.substring(0, 4)).isEqualTo(CHECKING.getCode());
   }
 
   @Test
@@ -51,10 +51,10 @@ class AccountNumberCreatorTest {
         .thenReturn(false);
 
     // when
-    String accountNumber = accountNumberCreator.create(AccountType.CHECKING);
+    String accountNumber = accountNumberCreator.create(CHECKING);
 
     // then
-    assertThat(accountNumber.substring(0, 4)).isEqualTo(AccountConstants.CHECKING_ACCOUNT_PREFIX);
+    assertThat(accountNumber.substring(0, 4)).isEqualTo(CHECKING.getCode());
     verify(checkingAccountRepository, times(2)).existsByAccountNumber(any());
   }
 
@@ -65,10 +65,10 @@ class AccountNumberCreatorTest {
     when(savingAccountRepository.existsByAccountNumber(any())).thenReturn(false);
 
     // when
-    String accountNumber = accountNumberCreator.create(AccountType.SAVING);
+    String accountNumber = accountNumberCreator.create(SAVING);
 
     // then
-    assertThat(accountNumber.substring(0, 4)).isEqualTo(AccountConstants.SAVING_ACCOUNT_PREFIX);
+    assertThat(accountNumber.substring(0, 4)).isEqualTo(SAVING.getCode());
   }
 
   @Test
@@ -80,10 +80,10 @@ class AccountNumberCreatorTest {
         .thenReturn(false);
 
     // when
-    String accountNumber = accountNumberCreator.create(AccountType.SAVING);
+    String accountNumber = accountNumberCreator.create(SAVING);
 
     // then
-    assertThat(accountNumber.substring(0, 4)).isEqualTo(AccountConstants.SAVING_ACCOUNT_PREFIX);
+    assertThat(accountNumber.substring(0, 4)).isEqualTo(SAVING.getCode());
     verify(savingAccountRepository, times(2)).existsByAccountNumber(any());
   }
 

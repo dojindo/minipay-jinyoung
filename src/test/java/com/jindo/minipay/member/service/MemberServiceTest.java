@@ -1,6 +1,5 @@
 package com.jindo.minipay.member.service;
 
-import static com.jindo.minipay.account.common.constant.AccountConstants.CHECKING_ACCOUNT_PREFIX;
 import static com.jindo.minipay.account.common.type.AccountType.CHECKING;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -9,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.jindo.minipay.account.checking.repository.CheckingAccountRepository;
+import com.jindo.minipay.account.common.type.AccountType;
 import com.jindo.minipay.account.common.util.AccountNumberCreator;
 import com.jindo.minipay.global.exception.CustomException;
 import com.jindo.minipay.global.exception.ErrorCode;
@@ -76,7 +76,7 @@ class MemberServiceTest {
       // when
       when(memberRepository.save(any())).thenReturn(owner);
 
-      String accountNumber = CHECKING_ACCOUNT_PREFIX + "12345678";
+      String accountNumber = CHECKING.getCode() + "12345678";
       when(accountNumberCreator.create(CHECKING)).thenReturn(accountNumber);
 
       memberService.signup(memberSignupRequest);
