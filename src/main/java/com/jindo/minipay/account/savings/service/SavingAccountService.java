@@ -31,17 +31,15 @@ public class SavingAccountService {
   private final AccountNumberCreator accountNumberCreator;
   private final CheckingAccountRepository checkingAccountRepository;
 
-
   public SavingAccountCreateResponse create(SavingAccountCreateRequest request) {
     Member owner = memberRepository.findById(request.getMemberId())
         .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
-    SavingAccount savingAccount = SavingAccount.builder()
-        .owner(owner)
-        .accountNumber(accountNumberCreator.create(SAVING))
-        .build();
+    String accountNumber = accountNumberCreator.create(SAVING);
 
-    SavingAccount savedSavingAccount = savingAccountRepository.save(savingAccount);
+    SavingAccount savedSavingAccount = savingAccountRepository.save(
+        SavingAccount.of(owner, accountNumber));
+
     return new SavingAccountCreateResponse(savedSavingAccount.getId());
   }
 
@@ -52,23 +50,29 @@ public class SavingAccountService {
             request.getSavingAccountId())
         .orElseThrow(() -> new CustomException(ACCOUNT_NOT_FOUND));
 
-    if (!memberRepository.existsById(request.getOwnerId())) {
-      throw new CustomException(MEMBER_NOT_FOUND);
-    }
+    validateExistsMember(request.getOwnerId());
 
     CheckingAccount checkingAccount = checkingAccountRepository.findByOwnerIdForUpdate(
             request.getOwnerId())
         .orElseThrow(() -> new CustomException(ACCOUNT_NOT_FOUND));
 
-    long amount = request.getAmount();
+    validateEnoughBalance(checkingAccount.getBalance(), request.getAmount());
 
-    if (checkingAccount.getBalance() < amount) {
-      throw new CustomException(ErrorCode.BALANCE_NOT_ENOUGH);
-    }
-
-    savingAccount.deposit(amount);
-    checkingAccount.withdraw(amount);
+    savingAccount.deposit(request.getAmount());
+    checkingAccount.withdraw(request.getAmount());
 
     return SavingAccountDepositResponse.fromEntity(savingAccount);
+  }
+
+  private void validateExistsMember(Long ownerId) {
+    if (!memberRepository.existsById(ownerId)) {
+      throw new CustomException(MEMBER_NOT_FOUND);
+    }
+  }
+
+  private void validateEnoughBalance(long balance, long amount) {
+    if (balance < amount) {
+      throw new CustomException(ErrorCode.BALANCE_NOT_ENOUGH);
+    }
   }
 }

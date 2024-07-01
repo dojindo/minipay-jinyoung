@@ -35,6 +35,13 @@ public class SavingAccount extends BaseTimeEntity {
   @JoinColumn(nullable = false)
   private Member owner;
 
+  public static SavingAccount of(Member owner, String accountNumber) {
+    return SavingAccount.builder()
+        .owner(owner)
+        .accountNumber(accountNumber)
+        .build();
+  }
+
   public void deposit(long amount) {
     this.amount += amount;
   }

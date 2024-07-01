@@ -18,7 +18,7 @@ public class CheckingAccountController {
   private final CheckingAccountService checkingAccountService;
 
   @PostMapping("/charge")
-  public ResponseEntity<?> charge(@RequestBody @Valid CheckingAccountChargeRequest request) {
+  public ResponseEntity<Void> charge(@RequestBody @Valid CheckingAccountChargeRequest request) {
     checkingAccountService.charge(request);
     return ResponseEntity.ok().build();
   }

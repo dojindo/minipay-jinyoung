@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SavingAccountCreateResponse {
 
-  private Long id;
+  private Long savingAccountId;
 
 }

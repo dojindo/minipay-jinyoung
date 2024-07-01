@@ -35,14 +35,17 @@ public class CheckingAccountService {
         .orElseGet(() -> new ChargeAmount(request.getMemberId(), 0L)).getAmount();
 
     long afterChargeAmount = chargeAmount + request.getAmount();
-
-    if (afterChargeAmount > ACCOUNT_CHARGE_LIMIT) {
-      throw new CustomException(CHARGE_LIMIT_EXCEEDED);
-    }
+    chargeLimitValidation(afterChargeAmount);
 
     chargeAmountRepository.save(request.getMemberId(), afterChargeAmount, timeToMidnight());
 
     checkingAccount.charge(request.getAmount());
+  }
+
+  private void chargeLimitValidation(long afterChargeAmount) {
+    if (afterChargeAmount > ACCOUNT_CHARGE_LIMIT) {
+      throw new CustomException(CHARGE_LIMIT_EXCEEDED);
+    }
   }
 
   private Duration timeToMidnight() {

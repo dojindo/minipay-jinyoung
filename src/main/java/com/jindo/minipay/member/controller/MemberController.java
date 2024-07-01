@@ -1,10 +1,9 @@
 package com.jindo.minipay.member.controller;
 
-import static jakarta.servlet.http.HttpServletResponse.SC_CREATED;
-
 import com.jindo.minipay.member.dto.MemberSignupRequest;
 import com.jindo.minipay.member.service.MemberService;
 import jakarta.validation.Valid;
+import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +19,8 @@ public class MemberController {
   private final MemberService memberService;
 
   @PostMapping
-  public ResponseEntity<Long> signup(@RequestBody @Valid MemberSignupRequest memberSignupRequest) {
-    return ResponseEntity.status(SC_CREATED).body(memberService.signup(memberSignupRequest));
+  public ResponseEntity<Void> signup(@RequestBody @Valid MemberSignupRequest memberSignupRequest) {
+    Long memberId = memberService.signup(memberSignupRequest);
+    return ResponseEntity.created(URI.create("/member/" + memberId)).build();
   }
 }
