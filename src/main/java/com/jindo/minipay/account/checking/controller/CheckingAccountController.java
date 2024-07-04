@@ -1,6 +1,9 @@
 package com.jindo.minipay.account.checking.controller;
 
 import com.jindo.minipay.account.checking.dto.CheckingAccountChargeRequest;
+import com.jindo.minipay.account.checking.dto.CheckingAccountChargeResponse;
+import com.jindo.minipay.account.checking.dto.CheckingAccountWireRequest;
+import com.jindo.minipay.account.checking.dto.CheckingAccountWireResponse;
 import com.jindo.minipay.account.checking.service.CheckingAccountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +21,14 @@ public class CheckingAccountController {
   private final CheckingAccountService checkingAccountService;
 
   @PostMapping("/charge")
-  public ResponseEntity<Void> charge(@RequestBody @Valid CheckingAccountChargeRequest request) {
-    checkingAccountService.charge(request);
-    return ResponseEntity.ok().build();
+  public ResponseEntity<CheckingAccountChargeResponse> charge(
+      @RequestBody @Valid CheckingAccountChargeRequest request) {
+    return ResponseEntity.ok().body(checkingAccountService.charge(request));
+  }
+
+  @PostMapping("/wire")
+  public ResponseEntity<CheckingAccountWireResponse> wire(
+      @RequestBody @Valid CheckingAccountWireRequest request) {
+    return ResponseEntity.ok().body(checkingAccountService.wire(request));
   }
 }

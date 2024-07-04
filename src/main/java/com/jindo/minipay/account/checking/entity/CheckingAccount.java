@@ -1,6 +1,9 @@
 package com.jindo.minipay.account.checking.entity;
 
+import static com.jindo.minipay.global.exception.ErrorCode.*;
+
 import com.jindo.minipay.global.entity.BaseTimeEntity;
+import com.jindo.minipay.global.exception.CustomException;
 import com.jindo.minipay.member.entity.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,11 +38,14 @@ public class CheckingAccount extends BaseTimeEntity {
   @JoinColumn(nullable = false)
   private Member owner;
 
-  public void charge(long amount) {
+  public void deposit(long amount) {
     balance += amount;
   }
 
   public void withdraw(long amount) {
+    if (balance < amount) {
+      throw new CustomException(BALANCE_NOT_ENOUGH);
+    }
     this.balance -= amount;
   }
 }
