@@ -1,11 +1,16 @@
 package com.jindo.minipay.account.checking.controller;
 
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jindo.minipay.account.checking.dto.CheckingAccountChargeRequest;
+import com.jindo.minipay.account.checking.dto.CheckingAccountChargeResponse;
+import com.jindo.minipay.account.checking.dto.CheckingAccountWireRequest;
+import com.jindo.minipay.account.checking.dto.CheckingAccountWireResponse;
 import com.jindo.minipay.account.checking.service.CheckingAccountService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -41,7 +46,6 @@ class CheckingAccountControllerTest {
       CheckingAccountChargeRequest request = new CheckingAccountChargeRequest(null, 10_000L);
 
       // when
-      doNothing().when(checkingAccountService).charge(request);
       // then
       mockMvc.perform(post(URI + "/charge")
               .contentType(MediaType.APPLICATION_JSON)
@@ -51,12 +55,11 @@ class CheckingAccountControllerTest {
 
     @Test
     @DisplayName("실패 - 충전금액이 음수 값인 경우")
-    void charge_null_amount() throws Exception {
+    void charge_negative_amount() throws Exception {
       // given
       CheckingAccountChargeRequest request = new CheckingAccountChargeRequest(1L, -10_000L);
 
       // when
-      doNothing().when(checkingAccountService).charge(request);
       // then
       mockMvc.perform(post(URI + "/charge")
               .contentType(MediaType.APPLICATION_JSON)
@@ -69,14 +72,96 @@ class CheckingAccountControllerTest {
     void charge() throws Exception {
       // given
       CheckingAccountChargeRequest request = new CheckingAccountChargeRequest(1L, 10_000L);
+      CheckingAccountChargeResponse response = new CheckingAccountChargeResponse(10_000L);
+
+      when(checkingAccountService.charge(any())).thenReturn(response);
 
       // when
-      doNothing().when(checkingAccountService).charge(request);
       // then
       mockMvc.perform(post(URI + "/charge")
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
-          .andExpect(status().isOk());
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.balance").value(10_000L));
+    }
+  }
+
+  @Nested
+  @DisplayName("친구에게 송금")
+  class CheckingAccountWireMethod {
+
+    @Test
+    @DisplayName("실패 - 송신자 아이디가 null 값인 경우")
+    void wire_null_senderId() throws Exception {
+      // given
+      CheckingAccountWireRequest request = new CheckingAccountWireRequest(null, 1L, 10_000L);
+
+      // when
+      // then
+      mockMvc.perform(post(URI + "/wire")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("실패 - 수신자 아이디가 null 값인 경우")
+    void wire_null_receiverId() throws Exception {
+      // given
+      CheckingAccountWireRequest request = new CheckingAccountWireRequest(1L, null, 10_000L);
+
+      // when
+      // then
+      mockMvc.perform(post(URI + "/wire")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("실패 - 송금금액이 0인 경우")
+    void wire_zero_amount() throws Exception {
+      // given
+      CheckingAccountWireRequest request = new CheckingAccountWireRequest(1L, 1L, 0);
+
+      // when
+      // then
+      mockMvc.perform(post(URI + "/wire")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("실패 - 송금금액이 음수 값인 경우")
+    void wire_negative_amount() throws Exception {
+      // given
+      CheckingAccountWireRequest request = new CheckingAccountWireRequest(1L, 1L, -10_000L);
+
+      // when
+      // then
+      mockMvc.perform(post(URI + "/wire")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("성공")
+    void wire() throws Exception {
+      // given
+      CheckingAccountWireRequest request = new CheckingAccountWireRequest(1L, 1L, 10_000L);
+      CheckingAccountWireResponse response = new CheckingAccountWireResponse(10_000L);
+
+      when(checkingAccountService.wire(any())).thenReturn(response);
+
+      // when
+      // then
+      mockMvc.perform(post(URI + "/wire")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.balance").value(10_000L));
     }
   }
 }
