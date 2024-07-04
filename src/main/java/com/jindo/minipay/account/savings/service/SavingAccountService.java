@@ -14,12 +14,10 @@ import com.jindo.minipay.account.savings.dto.SavingAccountDepositResponse;
 import com.jindo.minipay.account.savings.entity.SavingAccount;
 import com.jindo.minipay.account.savings.repository.SavingAccountRepository;
 import com.jindo.minipay.global.exception.CustomException;
-import com.jindo.minipay.global.exception.ErrorCode;
 import com.jindo.minipay.member.entity.Member;
 import com.jindo.minipay.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -43,36 +41,31 @@ public class SavingAccountService {
     return new SavingAccountCreateResponse(savedSavingAccount.getId());
   }
 
-  @Transactional(isolation = Isolation.READ_COMMITTED)
+  @Transactional
   public SavingAccountDepositResponse deposit(SavingAccountDepositRequest request) {
-
-    SavingAccount savingAccount = savingAccountRepository.findByIdForUpdate(
-            request.getSavingAccountId())
-        .orElseThrow(() -> new CustomException(ACCOUNT_NOT_FOUND));
-
     validateExistsMember(request.getOwnerId());
+    CheckingAccount checkingAccount = getCheckingAccount(request.getOwnerId());
+    SavingAccount savingAccount = getSavingAccount(request.getSavingAccountId());
 
-    CheckingAccount checkingAccount = checkingAccountRepository.findByOwnerIdForUpdate(
-            request.getOwnerId())
-        .orElseThrow(() -> new CustomException(ACCOUNT_NOT_FOUND));
-
-    validateEnoughBalance(checkingAccount.getBalance(), request.getAmount());
-
-    savingAccount.deposit(request.getAmount());
     checkingAccount.withdraw(request.getAmount());
+    savingAccount.deposit(request.getAmount());
 
     return SavingAccountDepositResponse.fromEntity(savingAccount);
+  }
+
+  private SavingAccount getSavingAccount(Long savingAccountId) {
+    return savingAccountRepository.findByIdForUpdate(savingAccountId)
+        .orElseThrow(() -> new CustomException(ACCOUNT_NOT_FOUND));
+  }
+
+  private CheckingAccount getCheckingAccount(Long ownerId) {
+    return checkingAccountRepository.findByOwnerIdForUpdate(ownerId)
+        .orElseThrow(() -> new CustomException(ACCOUNT_NOT_FOUND));
   }
 
   private void validateExistsMember(Long ownerId) {
     if (!memberRepository.existsById(ownerId)) {
       throw new CustomException(MEMBER_NOT_FOUND);
-    }
-  }
-
-  private void validateEnoughBalance(long balance, long amount) {
-    if (balance < amount) {
-      throw new CustomException(ErrorCode.BALANCE_NOT_ENOUGH);
     }
   }
 }
