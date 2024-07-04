@@ -126,28 +126,9 @@ class SavingAccountServiceTest {
         .build();
 
     @Test
-    @DisplayName("실패 - 존재히지 않는 적금 계좌인 경우")
-    void deposit_not_found_saving_account() {
-
-      // given
-      given(savingAccountRepository.findByIdForUpdate(request.getSavingAccountId())).willThrow(
-          new CustomException(ACCOUNT_NOT_FOUND));
-
-      // when
-      // then
-      assertThatThrownBy(() -> savingAccountService.deposit(request))
-          .isInstanceOf(CustomException.class)
-          .hasMessage(ACCOUNT_NOT_FOUND.getMessage());
-    }
-
-    @Test
     @DisplayName("실패 - 존재히지 않는 회원인 경우")
     void deposit_not_found_member() {
-
       // given
-      given(savingAccountRepository.findByIdForUpdate(request.getSavingAccountId())).willReturn(
-          Optional.of(savingAccount));
-
       given(memberRepository.existsById(request.getOwnerId())).willReturn(false);
 
       // when
@@ -160,14 +141,29 @@ class SavingAccountServiceTest {
     @Test
     @DisplayName("실패 - 존재히지 않는 메인 계좌인 경우")
     void deposit_not_found_checking_account() {
-
       // given
-      given(savingAccountRepository.findByIdForUpdate(request.getSavingAccountId())).willReturn(
-          Optional.of(savingAccount));
-
       given(memberRepository.existsById(request.getOwnerId())).willReturn(true);
 
       given(checkingAccountRepository.findByOwnerIdForUpdate(request.getOwnerId())).willThrow(
+          new CustomException(ACCOUNT_NOT_FOUND));
+
+      // when
+      // then
+      assertThatThrownBy(() -> savingAccountService.deposit(request))
+          .isInstanceOf(CustomException.class)
+          .hasMessage(ACCOUNT_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("실패 - 존재히지 않는 적금 계좌인 경우")
+    void deposit_not_found_saving_account() {
+      // given
+      given(memberRepository.existsById(request.getOwnerId())).willReturn(true);
+
+      given(checkingAccountRepository.findByOwnerIdForUpdate(request.getOwnerId())).willReturn(
+          Optional.of(checkingAccount));
+
+      given(savingAccountRepository.findByIdForUpdate(request.getSavingAccountId())).willThrow(
           new CustomException(ACCOUNT_NOT_FOUND));
 
       // when
