@@ -240,6 +240,36 @@ class CheckingAccountServiceTest {
 
         assertThat(response.getBalance()).isEqualTo(5_000L);
       }
+
+      @Test
+      @DisplayName("성공 - 송신자의 계좌에 자동 충전 단위로 충전된 후 수신자의 계좌에 송금한다.")
+      void wire_autoCharge_zero_mod() {
+        // given
+        long zeroModAmount = 20000L;
+        CheckingAccountWireRequest request = new CheckingAccountWireRequest(1L, 2L, zeroModAmount);
+
+        ChargeAmount chargeAmount = new ChargeAmount(sender.getId(), 0L);
+
+        when(checkingAccountRepository.findByOwnerIdForUpdate(request.getSenderId())).thenReturn(
+            Optional.of(senderAccount));
+
+        when(checkingAccountRepository.findByOwnerIdForUpdate(request.getReceiverId())).thenReturn(
+            Optional.of(receiverAccount));
+
+        when(chargeAmountRepository.findByMemberId(request.getSenderId())).thenReturn(
+            Optional.of(chargeAmount));
+
+        // when
+        CheckingAccountWireResponse response = checkingAccountService.wire(request);
+
+        // then
+        verify(chargeAmountRepository, times(1)).save(any(Long.class), anyLong(),
+            any(Duration.class));
+
+        assertThat(receiverAccount.getBalance()).isEqualTo(20000L);
+
+        assertThat(response.getBalance()).isEqualTo(10_000L);
+      }
     }
   }
 }
