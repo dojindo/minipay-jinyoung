@@ -63,6 +63,7 @@ sonar {
 		property "sonar.projectKey", "dojindo_minipay-jinyoung"
 		property "sonar.organization", "dojindo"
 		property 'sonar.host.url', 'https://sonarcloud.io'
+		property "sonar.sources", "src"
 	}
 }
 
