@@ -6,62 +6,6 @@ plugins {
 	id "org.sonarqube" version "4.4.1.3373"
 }
 
-def Qdomains = []
-for (qPattern in '**/QA'..'**/QZ') { // qPattern = '**/QA', '**/QB', ... '*.QZ'
-	Qdomains.add(qPattern + '*')
-}
-
-def jacocoExcludePatterns = [
-		"**/*Application*",
-		"**/config/**",
-		"**/exception/**",
-		"**/dto/**",
-		"**/*Response*",
-		"**/*Request*",
-		"**/constant/**",
-		"**/*Interceptor*",
-		"**/*Filter*",
-		"**/*Resolver*",
-		"**/*Entity*",
-		"**/test/**",
-		"**/resources/**",
-		"**/*BaseTimeEntity"
-] + Qdomains
-
-// jacoco
-jacocoTestReport {
-	dependsOn test
-
-	reports {
-		html.required = true
-		xml.required = true
-	}
-
-	afterEvaluate {
-		classDirectories.setFrom(
-				files(classDirectories.files.collect {
-					fileTree(dir: it, excludes: jacocoExcludePatterns)
-				})
-		)
-	}
-}
-
-// sonarqube
-sonar {
-	properties {
-		property "sonar.projectKey", "dojindo_minipay-jinyoung"
-		property "sonar.organization", "dojindo"
-		property 'sonar.host.url', 'https://sonarcloud.io'
-		property 'sonar.sources', 'src'
-		property 'sonar.language', 'java'
-		property 'sonar.sourceEncoding', 'UTF-8'
-		property 'sonar.test.exclusions', jacocoExcludePatterns.join(',')
-		property 'sonar.test.inclusions', '**/*Test.java'
-		property 'sonar.java.coveragePlugin', 'jacoco'
-		property 'sonar.coverage.jacoco.xmlReportPaths', "build/reports/jacoco/test/jacocoTestReport.xml"
-	}
-}
-
 group = 'com.jindo'
 version = '0.0.1-SNAPSHOT'
 
@@ -97,4 +41,57 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 	finalizedBy jacocoTestReport
+}
+
+def Qdomains = []
+for (qPattern in '**/QA'..'**/QZ') { // qPattern = '**/QA', '**/QB', ... '*.QZ'
+	Qdomains.add(qPattern + '*')
+}
+
+def jacocoExcludePatterns = [
+		"**/*Application*",
+		"**/config/**",
+		"**/exception/**",
+		"**/dto/**",
+		"**/constant/**",
+		"**/*Interceptor*",
+		"**/*Filter*",
+		"**/*Resolver*",
+		"**/*Entity*",
+		"**/test/**",
+		"**/resources/**"
+] + Qdomains
+
+// jacoco
+jacocoTestReport {
+	dependsOn test
+
+	reports {
+		html.required = true
+		xml.required = true
+	}
+
+	afterEvaluate {
+		classDirectories.setFrom(
+				files(classDirectories.files.collect {
+					fileTree(dir: it, excludes: jacocoExcludePatterns)
+				})
+		)
+	}
+}
+
+// sonarqube
+sonar {
+	properties {
+		property "sonar.projectKey", "dojindo_minipay-jinyoung"
+		property "sonar.organization", "dojindo"
+		property 'sonar.host.url', 'https://sonarcloud.io'
+		property 'sonar.sources', 'src'
+		property 'sonar.language', 'java'
+		property 'sonar.sourceEncoding', 'UTF-8'
+		property 'sonar.test.exclusions', jacocoExcludePatterns.join(',')
+		property 'sonar.test.inclusions', '**/*Test.java'
+		property 'sonar.java.coveragePlugin', 'jacoco'
+		property 'sonar.coverage.jacoco.xmlReportPaths', "build/reports/jacoco/test/jacocoTestReport.xml"
+	}
 }
