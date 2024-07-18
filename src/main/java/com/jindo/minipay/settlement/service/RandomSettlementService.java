@@ -39,7 +39,7 @@ public class RandomSettlementService extends SettlementService {
     Random random = new Random();
 
     int index = 0;
-    while (totalAmount != 0 && index != participantsSize) {
+    while (totalAmount != 0) {
       if (index == participantsSize - 1) {
         settleAmounts[index] = totalAmount;
         break;
