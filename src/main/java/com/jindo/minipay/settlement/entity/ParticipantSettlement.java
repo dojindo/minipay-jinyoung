@@ -1,5 +1,6 @@
 package com.jindo.minipay.settlement.entity;
 
+import com.jindo.minipay.global.entity.BaseTimeEntity;
 import com.jindo.minipay.member.entity.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,7 +19,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ParticipantSettlement {
+public class ParticipantSettlement extends BaseTimeEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

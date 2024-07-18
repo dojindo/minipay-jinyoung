@@ -5,6 +5,8 @@ import com.jindo.minipay.global.entity.BaseTimeEntity;
 import com.jindo.minipay.member.entity.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -35,6 +37,7 @@ public class Settlement extends BaseTimeEntity {
   private long supportsAmount;
 
   @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
   private SettlementType settlementType;
 
 }
