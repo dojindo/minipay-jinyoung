@@ -48,10 +48,6 @@ public class RandomSettlementService extends SettlementService {
       long share = totalAmount / RANDOM_SETTLEMENT_UNIT;
       long amountPerParticipant = random.nextLong(share) * RANDOM_SETTLEMENT_UNIT;
 
-      if (amountPerParticipant == 0) {
-        amountPerParticipant = totalAmount % RANDOM_SETTLEMENT_UNIT;
-      }
-
       settleAmounts[index++] = amountPerParticipant;
       totalAmount -= amountPerParticipant;
     }
