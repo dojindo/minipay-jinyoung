@@ -1,0 +1,11 @@
+### 정산 요청
+POST http://localhost:8080/settle/distribute
+Content-Type: application/json
+
+{
+  "requesterId": 1,
+  "participantsSize": 3,
+  "amount": 2,
+  "settlementType": "EQUAL"
+}
+
