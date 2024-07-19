@@ -7,6 +7,7 @@ import static com.jindo.minipay.settlement.constant.SettlementConstants.RANDOM_S
 import static com.jindo.minipay.settlement.constant.SettlementConstants.SETTLEMENT_PARTICIPANTS_MAX_SIZE;
 import static com.jindo.minipay.settlement.constant.SettlementConstants.SETTLEMENT_PARTICIPANTS_MIN_SIZE;
 
+import com.jindo.minipay.global.annotation.ValidEnum;
 import com.jindo.minipay.global.exception.CustomException;
 import com.jindo.minipay.member.entity.Member;
 import com.jindo.minipay.settlement.entity.Settlement;
@@ -43,7 +44,7 @@ public class SettleRequest {
   @Size(min = SETTLEMENT_PARTICIPANTS_MIN_SIZE, max = SETTLEMENT_PARTICIPANTS_MAX_SIZE)
   private long[] amounts;
 
-  @NotNull
+  @ValidEnum(enumClass = SettlementType.class)
   private SettlementType settlementType;
 
   public Settlement toEntity(Member requester) {
