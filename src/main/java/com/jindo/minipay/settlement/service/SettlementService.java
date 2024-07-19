@@ -65,12 +65,7 @@ public abstract class SettlementService {
       long amount = amounts[i];
 
       participantSettlementRepository.save(
-          createParticipantSettlement(savedSettlement, participant, amount));
+          ParticipantSettlement.of(savedSettlement, participant, amount));
     });
-  }
-
-  private ParticipantSettlement createParticipantSettlement(
-      Settlement savedSettlement, Member participant, long amount) {
-    return ParticipantSettlement.of(savedSettlement, participant, amount);
   }
 }
