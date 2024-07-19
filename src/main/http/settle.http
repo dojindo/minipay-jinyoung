@@ -1,11 +1,22 @@
-### 정산 요청
+### 정산 금액 분배 요청
 POST http://localhost:8080/settle/distribute
 Content-Type: application/json
 
 {
   "requesterId": 1,
   "participantsSize": 3,
-  "amount": 2,
+  "totalAmount": 3,
   "settlementType": "EQUAL"
+}
+
+### 정산 금액 분배 요청(실패 : 유효하지 않은 정산타입)
+POST http://localhost:8080/settle/distribute
+Content-Type: application/json
+
+{
+  "requesterId": 1,
+  "participantsSize": 3,
+  "totalAmount": 3,
+  "settlementType": "NONE"
 }
 
