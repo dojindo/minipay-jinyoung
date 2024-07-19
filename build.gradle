@@ -53,6 +53,7 @@ def jacocoExcludePatterns = [
 		"**/config/**",
 		"**/exception/**",
 		"**/dto/**",
+		"**/annotation/**",
 		"**/constant/**",
 		"**/*Interceptor*",
 		"**/*Filter*",
