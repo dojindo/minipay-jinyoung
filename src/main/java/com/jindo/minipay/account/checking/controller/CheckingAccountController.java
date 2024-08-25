@@ -20,12 +20,18 @@ public class CheckingAccountController {
 
   private final CheckingAccountService checkingAccountService;
 
+  /**
+   * 메인 계좌 충전
+   */
   @PostMapping("/charge")
   public ResponseEntity<CheckingAccountChargeResponse> charge(
       @RequestBody @Valid CheckingAccountChargeRequest request) {
     return ResponseEntity.ok().body(checkingAccountService.charge(request));
   }
 
+  /**
+   * 메인 계좌 간 송금
+   */
   @PostMapping("/wire")
   public ResponseEntity<CheckingAccountWireResponse> wire(
       @RequestBody @Valid CheckingAccountWireRequest request) {

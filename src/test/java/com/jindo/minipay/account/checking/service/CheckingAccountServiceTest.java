@@ -3,6 +3,7 @@ package com.jindo.minipay.account.checking.service;
 import static com.jindo.minipay.account.common.constant.AccountConstants.ACCOUNT_CHARGE_LIMIT;
 import static com.jindo.minipay.global.exception.ErrorCode.ACCOUNT_NOT_FOUND;
 import static com.jindo.minipay.global.exception.ErrorCode.CHARGE_LIMIT_EXCEEDED;
+import static com.jindo.minipay.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,8 +21,10 @@ import com.jindo.minipay.account.checking.entity.ChargeAmount;
 import com.jindo.minipay.account.checking.entity.CheckingAccount;
 import com.jindo.minipay.account.checking.repository.CheckingAccountRepository;
 import com.jindo.minipay.account.checking.repository.redis.ChargeAmountRepository;
+import com.jindo.minipay.account.common.util.AccountNumberCreator;
 import com.jindo.minipay.global.exception.CustomException;
 import com.jindo.minipay.member.entity.Member;
+import com.jindo.minipay.member.repository.MemberRepository;
 import java.time.Duration;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -43,6 +46,48 @@ class CheckingAccountServiceTest {
 
   @Mock
   ChargeAmountRepository chargeAmountRepository;
+
+  @Mock
+  MemberRepository memberRepository;
+
+  @Mock
+  AccountNumberCreator accountNumberCreator;
+
+  @Nested
+  @DisplayName("메인 계좌 생성")
+  class CheckingAccountCreateMethod {
+    Long memberId = 1L;
+
+    @Test
+    @DisplayName("싪패 - 존재하지 않는 회원알 때")
+    void create_member_not_found() {
+      // given
+      given(memberRepository.findById(memberId)).willThrow(new CustomException(MEMBER_NOT_FOUND));
+
+      // when
+      // then
+      assertThatThrownBy(() -> checkingAccountService.create(memberId))
+          .isInstanceOf(CustomException.class)
+          .hasMessage(MEMBER_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("성공")
+    void create_success() {
+      // given
+      Member member = Member.builder()
+          .id(1L)
+          .build();
+
+      given(memberRepository.findById(memberId)).willReturn(Optional.of(member));
+
+      // when
+      checkingAccountService.create(memberId);
+
+      // then
+      verify(checkingAccountRepository).save(any(CheckingAccount.class));
+    }
+  }
 
   @Nested
   @DisplayName("메인 계좌 충전")
