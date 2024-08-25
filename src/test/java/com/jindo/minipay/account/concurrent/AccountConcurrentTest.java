@@ -5,17 +5,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.jindo.minipay.account.checking.dto.CheckingAccountChargeRequest;
 import com.jindo.minipay.account.checking.dto.CheckingAccountWireRequest;
 import com.jindo.minipay.account.checking.entity.CheckingAccount;
-import com.jindo.minipay.account.checking.repository.CheckingAccountRepository;
 import com.jindo.minipay.account.checking.service.CheckingAccountService;
 import com.jindo.minipay.account.savings.dto.SavingAccountCreateRequest;
 import com.jindo.minipay.account.savings.dto.SavingAccountCreateResponse;
 import com.jindo.minipay.account.savings.dto.SavingAccountDepositRequest;
 import com.jindo.minipay.account.savings.entity.SavingAccount;
-import com.jindo.minipay.account.savings.repository.SavingAccountRepository;
 import com.jindo.minipay.account.savings.service.SavingAccountService;
+import com.jindo.minipay.integration.IntegrationTestSupport;
 import com.jindo.minipay.member.dto.MemberSignupRequest;
 import com.jindo.minipay.member.entity.Member;
-import com.jindo.minipay.member.repository.MemberRepository;
 import com.jindo.minipay.member.service.MemberService;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -23,10 +21,8 @@ import java.util.concurrent.Executors;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-public class AccountConcurrentTest {
+public class AccountConcurrentTest extends IntegrationTestSupport {
 
   @Autowired
   MemberService memberService;
@@ -36,15 +32,6 @@ public class AccountConcurrentTest {
 
   @Autowired
   CheckingAccountService checkingAccountService;
-
-  @Autowired
-  MemberRepository memberRepository;
-
-  @Autowired
-  SavingAccountRepository savingAccountRepository;
-
-  @Autowired
-  CheckingAccountRepository checkingAccountRepository;
 
   @Test
   @DisplayName("메인계좌 충전, 적금계좌 입금, 친구에게 송금 동시성 테스트")
