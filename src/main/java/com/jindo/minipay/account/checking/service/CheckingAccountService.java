@@ -2,8 +2,10 @@ package com.jindo.minipay.account.checking.service;
 
 import static com.jindo.minipay.account.common.constant.AccountConstants.ACCOUNT_CHARGE_LIMIT;
 import static com.jindo.minipay.account.common.constant.AccountConstants.AUTO_CHARGE_UNIT;
+import static com.jindo.minipay.account.common.type.AccountType.CHECKING;
 import static com.jindo.minipay.global.exception.ErrorCode.ACCOUNT_NOT_FOUND;
 import static com.jindo.minipay.global.exception.ErrorCode.CHARGE_LIMIT_EXCEEDED;
+import static com.jindo.minipay.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 
 import com.jindo.minipay.account.checking.dto.CheckingAccountChargeRequest;
 import com.jindo.minipay.account.checking.dto.CheckingAccountChargeResponse;
@@ -13,20 +15,38 @@ import com.jindo.minipay.account.checking.entity.ChargeAmount;
 import com.jindo.minipay.account.checking.entity.CheckingAccount;
 import com.jindo.minipay.account.checking.repository.CheckingAccountRepository;
 import com.jindo.minipay.account.checking.repository.redis.ChargeAmountRepository;
+import com.jindo.minipay.account.common.util.AccountNumberCreator;
 import com.jindo.minipay.global.exception.CustomException;
+import com.jindo.minipay.member.entity.Member;
+import com.jindo.minipay.member.repository.MemberRepository;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CheckingAccountService {
 
   private final CheckingAccountRepository checkingAccountRepository;
-
+  private final MemberRepository memberRepository;
+  private final AccountNumberCreator accountNumberCreator;
   private final ChargeAmountRepository chargeAmountRepository;
+
+  public void create(Long memberId) {
+    Member owner = memberRepository.findById(memberId)
+        .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+
+    CheckingAccount checkingAccount = CheckingAccount.builder()
+        .owner(owner)
+        .accountNumber(accountNumberCreator.create(CHECKING))
+        .build();
+
+    checkingAccountRepository.save(checkingAccount);
+  }
 
   @Transactional
   public CheckingAccountChargeResponse charge(CheckingAccountChargeRequest request) {
