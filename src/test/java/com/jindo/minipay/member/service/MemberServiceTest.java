@@ -1,19 +1,17 @@
 package com.jindo.minipay.member.service;
 
-import static com.jindo.minipay.account.common.type.AccountType.CHECKING;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.jindo.minipay.account.checking.repository.CheckingAccountRepository;
-import com.jindo.minipay.account.common.type.AccountType;
-import com.jindo.minipay.account.common.util.AccountNumberCreator;
 import com.jindo.minipay.global.exception.CustomException;
 import com.jindo.minipay.global.exception.ErrorCode;
 import com.jindo.minipay.member.dto.MemberSignupRequest;
 import com.jindo.minipay.member.entity.Member;
+import com.jindo.minipay.member.event.MemberSignupEvent;
 import com.jindo.minipay.member.repository.MemberRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -22,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class MemberServiceTest {
@@ -30,10 +29,7 @@ class MemberServiceTest {
   MemberRepository memberRepository;
 
   @Mock
-  CheckingAccountRepository checkingAccountRepository;
-
-  @Mock
-  AccountNumberCreator accountNumberCreator;
+  ApplicationEventPublisher eventPublisher;
 
   @InjectMocks
   MemberService memberService;
@@ -62,7 +58,7 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("성공 - 회원과 메인계좌가 생성된다.")
+    @DisplayName("성공 - 회원 가입 완료")
     void signup() {
       // given
       given(memberRepository.existsByUsername(memberSignupRequest.getUsername())).willReturn(false);
@@ -76,13 +72,11 @@ class MemberServiceTest {
       // when
       when(memberRepository.save(any())).thenReturn(owner);
 
-      String accountNumber = CHECKING.getCode() + "12345678";
-      when(accountNumberCreator.create(CHECKING)).thenReturn(accountNumber);
-
-      memberService.signup(memberSignupRequest);
+      Long ownerId = memberService.signup(memberSignupRequest);
 
       // then
-      verify(checkingAccountRepository).save(any());
+      verify(eventPublisher).publishEvent(any(MemberSignupEvent.class));
+      assertThat(ownerId).isEqualTo(1L);
     }
   }
 }
