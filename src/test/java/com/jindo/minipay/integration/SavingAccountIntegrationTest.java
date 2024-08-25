@@ -95,12 +95,12 @@ class SavingAccountIntegrationTest extends IntegrationTestSupport {
     // then
     Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findByOwnerId(
         owner.getId());
-    assertThat(checkingAccount.isPresent());
+    assertThat(checkingAccount).isPresent();
     assertThat(checkingAccount.get().getBalance()).isEqualTo(DEFAULT_AMOUNT - request.getAmount());
 
     Optional<SavingAccount> updatedSavingAccount = savingAccountRepository.findById(
         savingAccount.getId());
-    assertThat(updatedSavingAccount.isPresent());
+    assertThat(updatedSavingAccount).isPresent();
     assertThat(updatedSavingAccount.get().getAmount()).isEqualTo(request.getAmount());
   }
 
