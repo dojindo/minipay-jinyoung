@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @DisplayName("메인 계좌 통합 테스트")
-public class CheckingAccountIntegrationTest extends IntegrationTestSupport {
+class CheckingAccountIntegrationTest extends IntegrationTestSupport {
 
   private static final String URI = "/account";
   private static final long DEFAULT_AMOUNT = 50000L;
@@ -49,7 +49,7 @@ public class CheckingAccountIntegrationTest extends IntegrationTestSupport {
     // then
     Optional<CheckingAccount> checkingAccount = checkingAccountRepository.findByOwnerId(
         owner.getId());
-    assertThat(checkingAccount.isPresent()).isTrue();
+    assertThat(checkingAccount).isPresent();
     assertThat(checkingAccount.get().getBalance())
         .isEqualTo(DEFAULT_AMOUNT + request.getAmount());
   }
@@ -84,8 +84,8 @@ public class CheckingAccountIntegrationTest extends IntegrationTestSupport {
     Optional<CheckingAccount> receiverCheckingAccount =
         checkingAccountRepository.findByOwnerId(receiver.getId());
 
-    assertThat(senderCheckingAccount.isPresent()).isTrue();
-    assertThat(receiverCheckingAccount.isPresent()).isTrue();
+    assertThat(senderCheckingAccount).isPresent();
+    assertThat(receiverCheckingAccount).isPresent();
 
     assertThat(senderCheckingAccount.get().getBalance())
         .isEqualTo(DEFAULT_AMOUNT - request.getAmount());

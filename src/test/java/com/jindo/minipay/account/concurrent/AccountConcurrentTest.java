@@ -22,7 +22,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class AccountConcurrentTest extends IntegrationTestSupport {
+class AccountConcurrentTest extends IntegrationTestSupport {
 
   @Autowired
   MemberService memberService;

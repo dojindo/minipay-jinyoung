@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @DisplayName("회원 통합 테스트")
-public class MemberIntegrationTest extends IntegrationTestSupport {
+class MemberIntegrationTest extends IntegrationTestSupport {
 
   private static final String URI = "/member";
 
@@ -48,13 +48,13 @@ public class MemberIntegrationTest extends IntegrationTestSupport {
 
     // then
     Optional<Member> savedMember = memberRepository.findByUsername(username);
-    assertThat(savedMember.isPresent()).isTrue();
+    assertThat(savedMember).isPresent();
     assertThat(savedMember.get().getUsername()).isEqualTo(username);
 
     Optional<CheckingAccount> savedCheckingAccount = checkingAccountRepository.findByOwnerId(
         savedMember.get().getId());
-    assertThat(savedCheckingAccount.isPresent()).isTrue();
+    assertThat(savedCheckingAccount).isPresent();
     assertThat(savedCheckingAccount.get().getOwner().getId()).isEqualTo(savedMember.get().getId());
-    assertThat(savedCheckingAccount.get().getBalance()).isEqualTo(0L);
+    assertThat(savedCheckingAccount.get().getBalance()).isZero();
   }
 }

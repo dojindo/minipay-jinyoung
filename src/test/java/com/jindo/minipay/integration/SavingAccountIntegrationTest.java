@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @DisplayName("적금 계좌 통합 테스트")
-public class SavingAccountIntegrationTest extends IntegrationTestSupport {
+class SavingAccountIntegrationTest extends IntegrationTestSupport {
 
   private static final String URI = "/saving";
   private static final long DEFAULT_AMOUNT = 50000L;

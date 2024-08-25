@@ -18,13 +18,12 @@ import io.restassured.RestAssured;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @DisplayName("정산 통합 테스트")
-public class SettlementIntegrationTest extends IntegrationTestSupport {
+class SettlementIntegrationTest extends IntegrationTestSupport {
 
   private static final String URI = "/settle";
 
@@ -36,13 +35,6 @@ public class SettlementIntegrationTest extends IntegrationTestSupport {
 
   @Autowired
   ParticipantSettlementRepository participantSettlementRepository;
-
-  @AfterEach
-  void tearDown() {
-    participantSettlementRepository.deleteAllInBatch();
-    settlementRepository.deleteAllInBatch();
-    memberRepository.deleteAllInBatch();
-  }
 
   @Test
   @DisplayName("회원마다 정산해야할 금액을 동일하게 분배한다.")
