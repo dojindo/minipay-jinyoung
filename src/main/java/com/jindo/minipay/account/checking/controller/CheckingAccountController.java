@@ -1,9 +1,9 @@
 package com.jindo.minipay.account.checking.controller;
 
 import com.jindo.minipay.account.checking.dto.CheckingAccountChargeRequest;
-import com.jindo.minipay.account.checking.dto.CheckingAccountChargeResponse;
-import com.jindo.minipay.account.checking.dto.CheckingAccountWireRequest;
-import com.jindo.minipay.account.checking.dto.CheckingAccountWireResponse;
+import com.jindo.minipay.account.checking.dto.ChargeResponse;
+import com.jindo.minipay.account.checking.dto.CheckingAccountRemitRequest;
+import com.jindo.minipay.account.checking.dto.RemitResponse;
 import com.jindo.minipay.account.checking.service.CheckingAccountService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class CheckingAccountController {
    * 메인 계좌 충전
    */
   @PostMapping("/charge")
-  public ResponseEntity<CheckingAccountChargeResponse> charge(
+  public ResponseEntity<ChargeResponse> charge(
       @RequestBody @Valid CheckingAccountChargeRequest request) {
     return ResponseEntity.ok().body(checkingAccountService.charge(request));
   }
@@ -32,9 +32,9 @@ public class CheckingAccountController {
   /**
    * 메인 계좌 간 송금
    */
-  @PostMapping("/wire")
-  public ResponseEntity<CheckingAccountWireResponse> wire(
-      @RequestBody @Valid CheckingAccountWireRequest request) {
-    return ResponseEntity.ok().body(checkingAccountService.wire(request));
+  @PostMapping("/remit")
+  public ResponseEntity<RemitResponse> remit(
+      @RequestBody @Valid CheckingAccountRemitRequest request) {
+    return ResponseEntity.ok().body(checkingAccountService.remit(request));
   }
 }

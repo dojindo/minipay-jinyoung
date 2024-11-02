@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CheckingAccountWireRequest {
+public class CheckingAccountRemitRequest {
 
   @NotNull
   private Long senderId;

@@ -8,9 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jindo.minipay.account.checking.dto.CheckingAccountChargeRequest;
-import com.jindo.minipay.account.checking.dto.CheckingAccountChargeResponse;
-import com.jindo.minipay.account.checking.dto.CheckingAccountWireRequest;
-import com.jindo.minipay.account.checking.dto.CheckingAccountWireResponse;
+import com.jindo.minipay.account.checking.dto.ChargeResponse;
+import com.jindo.minipay.account.checking.dto.CheckingAccountRemitRequest;
+import com.jindo.minipay.account.checking.dto.RemitResponse;
 import com.jindo.minipay.account.checking.service.CheckingAccountService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -35,6 +35,9 @@ class CheckingAccountControllerTest {
 
   static final String URI = "/account";
 
+  static final String CHARGE_URL = "/charge";
+  static final String REMIT_URL = "/remit";
+
   @Nested
   @DisplayName("메인 계좌 충전")
   class CheckingAccountChargeMethod {
@@ -47,7 +50,7 @@ class CheckingAccountControllerTest {
 
       // when
       // then
-      mockMvc.perform(post(URI + "/charge")
+      mockMvc.perform(post(URI + CHARGE_URL)
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isBadRequest());
@@ -61,7 +64,7 @@ class CheckingAccountControllerTest {
 
       // when
       // then
-      mockMvc.perform(post(URI + "/charge")
+      mockMvc.perform(post(URI + CHARGE_URL)
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isBadRequest());
@@ -72,13 +75,13 @@ class CheckingAccountControllerTest {
     void charge() throws Exception {
       // given
       CheckingAccountChargeRequest request = new CheckingAccountChargeRequest(1L, 10_000L);
-      CheckingAccountChargeResponse response = new CheckingAccountChargeResponse(10_000L);
+      ChargeResponse response = new ChargeResponse(10_000L);
 
       when(checkingAccountService.charge(any())).thenReturn(response);
 
       // when
       // then
-      mockMvc.perform(post(URI + "/charge")
+      mockMvc.perform(post(URI + CHARGE_URL)
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isOk())
@@ -94,11 +97,11 @@ class CheckingAccountControllerTest {
     @DisplayName("실패 - 송신자 아이디가 null 값인 경우")
     void wire_null_senderId() throws Exception {
       // given
-      CheckingAccountWireRequest request = new CheckingAccountWireRequest(null, 1L, 10_000L);
+      CheckingAccountRemitRequest request = new CheckingAccountRemitRequest(null, 1L, 10_000L);
 
       // when
       // then
-      mockMvc.perform(post(URI + "/wire")
+      mockMvc.perform(post(URI + REMIT_URL)
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isBadRequest());
@@ -108,11 +111,11 @@ class CheckingAccountControllerTest {
     @DisplayName("실패 - 수신자 아이디가 null 값인 경우")
     void wire_null_receiverId() throws Exception {
       // given
-      CheckingAccountWireRequest request = new CheckingAccountWireRequest(1L, null, 10_000L);
+      CheckingAccountRemitRequest request = new CheckingAccountRemitRequest(1L, null, 10_000L);
 
       // when
       // then
-      mockMvc.perform(post(URI + "/wire")
+      mockMvc.perform(post(URI + REMIT_URL)
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isBadRequest());
@@ -122,11 +125,11 @@ class CheckingAccountControllerTest {
     @DisplayName("실패 - 송금금액이 0인 경우")
     void wire_zero_amount() throws Exception {
       // given
-      CheckingAccountWireRequest request = new CheckingAccountWireRequest(1L, 1L, 0);
+      CheckingAccountRemitRequest request = new CheckingAccountRemitRequest(1L, 1L, 0);
 
       // when
       // then
-      mockMvc.perform(post(URI + "/wire")
+      mockMvc.perform(post(URI + REMIT_URL)
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isBadRequest());
@@ -136,11 +139,11 @@ class CheckingAccountControllerTest {
     @DisplayName("실패 - 송금금액이 음수 값인 경우")
     void wire_negative_amount() throws Exception {
       // given
-      CheckingAccountWireRequest request = new CheckingAccountWireRequest(1L, 1L, -10_000L);
+      CheckingAccountRemitRequest request = new CheckingAccountRemitRequest(1L, 1L, -10_000L);
 
       // when
       // then
-      mockMvc.perform(post(URI + "/wire")
+      mockMvc.perform(post(URI + REMIT_URL)
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isBadRequest());
@@ -150,14 +153,14 @@ class CheckingAccountControllerTest {
     @DisplayName("성공")
     void wire() throws Exception {
       // given
-      CheckingAccountWireRequest request = new CheckingAccountWireRequest(1L, 1L, 10_000L);
-      CheckingAccountWireResponse response = new CheckingAccountWireResponse(10_000L);
+      CheckingAccountRemitRequest request = new CheckingAccountRemitRequest(1L, 1L, 10_000L);
+      RemitResponse response = new RemitResponse(10_000L);
 
-      when(checkingAccountService.wire(any())).thenReturn(response);
+      when(checkingAccountService.remit(any())).thenReturn(response);
 
       // when
       // then
-      mockMvc.perform(post(URI + "/wire")
+      mockMvc.perform(post(URI + REMIT_URL)
               .contentType(MediaType.APPLICATION_JSON)
               .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isOk())
