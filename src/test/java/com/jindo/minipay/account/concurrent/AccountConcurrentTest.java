@@ -3,7 +3,7 @@ package com.jindo.minipay.account.concurrent;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jindo.minipay.account.checking.dto.CheckingAccountChargeRequest;
-import com.jindo.minipay.account.checking.dto.CheckingAccountWireRequest;
+import com.jindo.minipay.account.checking.dto.CheckingAccountRemitRequest;
 import com.jindo.minipay.account.checking.entity.CheckingAccount;
 import com.jindo.minipay.account.checking.service.CheckingAccountService;
 import com.jindo.minipay.account.savings.dto.SavingAccountCreateRequest;
@@ -14,10 +14,12 @@ import com.jindo.minipay.account.savings.service.SavingAccountService;
 import com.jindo.minipay.integration.IntegrationTestSupport;
 import com.jindo.minipay.member.dto.MemberSignupRequest;
 import com.jindo.minipay.member.entity.Member;
+import com.jindo.minipay.member.entity.MemberSettings;
 import com.jindo.minipay.member.service.MemberService;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,25 +35,39 @@ class AccountConcurrentTest extends IntegrationTestSupport {
   @Autowired
   CheckingAccountService checkingAccountService;
 
-  @Test
-  @DisplayName("메인계좌 충전, 적금계좌 입금, 친구에게 송금 동시성 테스트")
-  void checking_account_concurrent() throws InterruptedException {
-    // given
-
+  @BeforeEach
+  void preprocess() {
     // 회원등록
     String loginUsername = "loginUsername";
     memberService.signup(new MemberSignupRequest(loginUsername, "1q2w3e4r!"));
     Member loginUser = memberRepository.findByUsername(loginUsername).get();
+    MemberSettings loginUserSettings = memberSettingsRepository.findByMember(loginUser).get();
+    loginUserSettings.enableImmediateTransfer();
+    memberSettingsRepository.save(loginUserSettings);
 
     // 친구등록
     String friendUsername = "friendUsername";
     memberService.signup(new MemberSignupRequest(friendUsername, "1q2w3e4r!"));
     Member friend = memberRepository.findByUsername(friendUsername).get();
+    MemberSettings friendSettings = memberSettingsRepository.findByMember(friend).get();
+    friendSettings.enableImmediateTransfer();
+    memberSettingsRepository.save(friendSettings);
 
     // 메인 계좌 충전
     checkingAccountService.charge(new CheckingAccountChargeRequest(loginUser.getId(), 1_000_000L));
 
     checkingAccountService.charge(new CheckingAccountChargeRequest(friend.getId(), 1_000_000L));
+  }
+
+  @Test
+  @DisplayName("메인계좌 충전, 적금계좌 입금, 친구에게 송금 동시성 테스트")
+  void checking_account_concurrent() throws InterruptedException {
+    // given
+    String loginUsername = "loginUsername";
+    String friendUsername = "friendUsername";
+
+    Member loginUser = memberRepository.findByUsername(loginUsername).get();
+    Member friend = memberRepository.findByUsername(friendUsername).get();
 
     // 적금 계좌 개설
     SavingAccountCreateResponse loginUserSavingAccountCreateResponse = savingAccountService.create(
@@ -81,11 +97,11 @@ class AccountConcurrentTest extends IntegrationTestSupport {
             10_000L);
 
     // 로그인 유저 송금 request
-    CheckingAccountWireRequest loginUserWireRequest = new CheckingAccountWireRequest(
+    CheckingAccountRemitRequest loginUserWireRequest = new CheckingAccountRemitRequest(
         loginUser.getId(), friend.getId(), 10_000L);
 
     // 친구 송금 request
-    CheckingAccountWireRequest friendUserWireRequest = new CheckingAccountWireRequest(
+    CheckingAccountRemitRequest friendUserWireRequest = new CheckingAccountRemitRequest(
         friend.getId(), loginUser.getId(), 10_000L);
 
     int nThreads = 100;
@@ -100,8 +116,8 @@ class AccountConcurrentTest extends IntegrationTestSupport {
         checkingAccountService.charge(friendChargeRequest);
         savingAccountService.deposit(loginUserDepositRequest);
         savingAccountService.deposit(friendDepositRequest);
-        checkingAccountService.wire(loginUserWireRequest);
-        checkingAccountService.wire(friendUserWireRequest);
+        checkingAccountService.remit(loginUserWireRequest); // 나 -> 친구 송금
+        checkingAccountService.remit(friendUserWireRequest); // 친구 -> 나 송금
         countDownLatch.countDown();
       });
     }
