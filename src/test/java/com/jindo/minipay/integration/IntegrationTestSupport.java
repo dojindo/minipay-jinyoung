@@ -5,7 +5,10 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 import com.jindo.minipay.account.checking.repository.CheckingAccountRepository;
 import com.jindo.minipay.account.savings.repository.SavingAccountRepository;
 import com.jindo.minipay.member.entity.Member;
+import com.jindo.minipay.member.entity.MemberSettings;
 import com.jindo.minipay.member.repository.MemberRepository;
+import com.jindo.minipay.member.repository.MemberSettingsRepository;
+import com.jindo.minipay.pending.repository.PendingTransferRepository;
 import com.jindo.minipay.settlement.repository.ParticipantSettlementRepository;
 import com.jindo.minipay.settlement.repository.SettlementRepository;
 import io.restassured.RestAssured;
@@ -26,6 +29,9 @@ public abstract class IntegrationTestSupport {
   protected MemberRepository memberRepository;
 
   @Autowired
+  protected MemberSettingsRepository memberSettingsRepository;
+
+  @Autowired
   protected CheckingAccountRepository checkingAccountRepository;
 
   @Autowired
@@ -36,6 +42,9 @@ public abstract class IntegrationTestSupport {
 
   @Autowired
   protected ParticipantSettlementRepository participantSettlementRepository;
+
+  @Autowired
+  protected PendingTransferRepository pendingTransferRepository;
 
   @Autowired
   protected RedisTemplate<String, Object> redisTemplate;
@@ -50,10 +59,12 @@ public abstract class IntegrationTestSupport {
 
   @AfterEach
   void tearDown() {
+    memberSettingsRepository.deleteAllInBatch();
     participantSettlementRepository.deleteAllInBatch();
     settlementRepository.deleteAllInBatch();
     checkingAccountRepository.deleteAllInBatch();
     savingAccountRepository.deleteAllInBatch();
+    pendingTransferRepository.deleteAllInBatch();
     memberRepository.deleteAllInBatch();
     Set<String> keys = redisTemplate.keys("*");
     if (keys != null && !keys.isEmpty()) {
@@ -62,9 +73,17 @@ public abstract class IntegrationTestSupport {
   }
 
   protected Member saveAndGetMember(String username) {
-    return memberRepository.save(Member.builder()
+    Member member = memberRepository.save(Member.builder()
         .username(username)
         .password("1q2w3e4r!")
         .build());
+
+    MemberSettings settings = MemberSettings.builder()
+        .member(member)
+        .immediateTransferEnabled(false)
+        .build();
+
+    memberSettingsRepository.save(settings);
+    return member;
   }
 }
