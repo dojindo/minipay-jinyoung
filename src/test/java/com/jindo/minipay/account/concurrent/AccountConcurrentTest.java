@@ -6,20 +6,15 @@ import com.jindo.minipay.account.checking.dto.CheckingAccountChargeRequest;
 import com.jindo.minipay.account.checking.dto.CheckingAccountRemitRequest;
 import com.jindo.minipay.account.checking.entity.CheckingAccount;
 import com.jindo.minipay.account.checking.service.CheckingAccountService;
-import com.jindo.minipay.account.savings.dto.SavingAccountCreateRequest;
-import com.jindo.minipay.account.savings.dto.SavingAccountCreateResponse;
 import com.jindo.minipay.account.savings.dto.SavingAccountDepositRequest;
 import com.jindo.minipay.account.savings.entity.SavingAccount;
 import com.jindo.minipay.account.savings.service.SavingAccountService;
 import com.jindo.minipay.integration.IntegrationTestSupport;
-import com.jindo.minipay.member.dto.MemberSignupRequest;
 import com.jindo.minipay.member.entity.Member;
-import com.jindo.minipay.member.entity.MemberSettings;
 import com.jindo.minipay.member.service.MemberService;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,74 +30,26 @@ class AccountConcurrentTest extends IntegrationTestSupport {
   @Autowired
   CheckingAccountService checkingAccountService;
 
-  @BeforeEach
-  void preprocess() {
-    // 회원등록
-    String loginUsername = "loginUsername";
-    memberService.signup(new MemberSignupRequest(loginUsername, "1q2w3e4r!"));
-    Member loginUser = memberRepository.findByUsername(loginUsername).get();
-    MemberSettings loginUserSettings = memberSettingsRepository.findByMember(loginUser).get();
-    loginUserSettings.enableImmediateTransfer();
-    memberSettingsRepository.save(loginUserSettings);
-
-    // 친구등록
-    String friendUsername = "friendUsername";
-    memberService.signup(new MemberSignupRequest(friendUsername, "1q2w3e4r!"));
-    Member friend = memberRepository.findByUsername(friendUsername).get();
-    MemberSettings friendSettings = memberSettingsRepository.findByMember(friend).get();
-    friendSettings.enableImmediateTransfer();
-    memberSettingsRepository.save(friendSettings);
-
-    // 메인 계좌 충전
-    checkingAccountService.charge(new CheckingAccountChargeRequest(loginUser.getId(), 1_000_000L));
-
-    checkingAccountService.charge(new CheckingAccountChargeRequest(friend.getId(), 1_000_000L));
-  }
+  static final String ME = "me";
+  static final String FRIEND = "friend";
 
   @Test
-  @DisplayName("메인계좌 충전, 적금계좌 입금, 친구에게 송금 동시성 테스트")
-  void checking_account_concurrent() throws InterruptedException {
+  @DisplayName("메인계좌 충전, 적금계좌 입금 동시성 테스트")
+  void charge_saving_deposit_concurrent() throws InterruptedException {
     // given
-    String loginUsername = "loginUsername";
-    String friendUsername = "friendUsername";
+    Member me = saveAndGetMember(ME);
 
-    Member loginUser = memberRepository.findByUsername(loginUsername).get();
-    Member friend = memberRepository.findByUsername(friendUsername).get();
+    saveCheckingAccount(me, 50_000L);
 
-    // 적금 계좌 개설
-    SavingAccountCreateResponse loginUserSavingAccountCreateResponse = savingAccountService.create(
-        new SavingAccountCreateRequest(loginUser.getId()));
+    SavingAccount mySavingAccount = saveSavingAccount(me);
 
-    SavingAccountCreateResponse friendSavingAccountCreateResponse = savingAccountService.create(
-        new SavingAccountCreateRequest(friend.getId()));
+    // 내 메인 계좌 충전 request
+    CheckingAccountChargeRequest myChargeRequest =
+        new CheckingAccountChargeRequest(me.getId(), 10_000L);
 
-    // 로그인 유저 메인 계좌 충전 request
-    CheckingAccountChargeRequest loginUserChargeRequest =
-        new CheckingAccountChargeRequest(loginUser.getId(), 10_000L);
-
-    // 친구 메인 계좌 충전 request
-    CheckingAccountChargeRequest friendChargeRequest =
-        new CheckingAccountChargeRequest(friend.getId(), 10_000L);
-
-    // 로그인 유저 적금 계좌 입금 request
-    SavingAccountDepositRequest loginUserDepositRequest =
-        new SavingAccountDepositRequest(loginUser.getId(),
-            loginUserSavingAccountCreateResponse.getSavingAccountId(),
-            10_000L);
-
-    // 친구 적금 계좌 입금 request
-    SavingAccountDepositRequest friendDepositRequest =
-        new SavingAccountDepositRequest(friend.getId(),
-            friendSavingAccountCreateResponse.getSavingAccountId(),
-            10_000L);
-
-    // 로그인 유저 송금 request
-    CheckingAccountRemitRequest loginUserWireRequest = new CheckingAccountRemitRequest(
-        loginUser.getId(), friend.getId(), 10_000L);
-
-    // 친구 송금 request
-    CheckingAccountRemitRequest friendUserWireRequest = new CheckingAccountRemitRequest(
-        friend.getId(), loginUser.getId(), 10_000L);
+    // 내 적금 계좌 입금 request
+    SavingAccountDepositRequest myDepositRequest =
+        new SavingAccountDepositRequest(me.getId(), mySavingAccount.getId(), 10_000L);
 
     int nThreads = 100;
     int repeat = 5;
@@ -112,12 +59,67 @@ class AccountConcurrentTest extends IntegrationTestSupport {
     // when
     for (int i = 0; i < repeat; i++) {
       executorService.execute(() -> {
-        checkingAccountService.charge(loginUserChargeRequest);
+        checkingAccountService.charge(myChargeRequest);
+        savingAccountService.deposit(myDepositRequest);
+        countDownLatch.countDown();
+      });
+    }
+
+    countDownLatch.await();
+    executorService.shutdown();
+
+    CheckingAccount myCheckingAccount =
+        checkingAccountRepository.findByOwnerId(me.getId()).get();
+    mySavingAccount = savingAccountRepository.findByOwnerId(me.getId()).get(0);
+
+    // then
+    // 초기 금액 50000 + (10000원 충전 * 5) - (10000원 적금 * 5) = 50000원
+    assertThat(myCheckingAccount.getBalance()).isEqualTo(50_000L);
+    assertThat(mySavingAccount.getAmount()).isEqualTo(50_000L);
+  }
+
+  @Test
+  @DisplayName("메인계좌 충전, 친구에게 송금 동시성 테스트")
+  void charge_remit_concurrent() throws InterruptedException {
+    // given
+    Member me = saveAndGetMember(ME);
+    Member friend = saveAndGetMember(FRIEND);
+
+    saveCheckingAccount(me, 50_000L);
+    saveCheckingAccount(friend, 50_000L);
+
+    // 내 메인 계좌 충전 request
+    CheckingAccountChargeRequest myChargeRequest =
+        new CheckingAccountChargeRequest(me.getId(), 10_000L);
+
+    // 친구 메인 계좌 충전 request
+    CheckingAccountChargeRequest friendChargeRequest =
+        new CheckingAccountChargeRequest(friend.getId(), 10_000L);
+
+    // 둘 모두 즉시송금으로 변경
+    enableImmediateTransferOfMember(me);
+    enableImmediateTransferOfMember(friend);
+
+    // 내가 친구에게 송금 request
+    CheckingAccountRemitRequest myRemitRequest = new CheckingAccountRemitRequest(
+        me.getId(), friend.getId(), 10_000L);
+
+    // 친구가 나에게 송금
+    CheckingAccountRemitRequest friendRemitRequest = new CheckingAccountRemitRequest(
+        friend.getId(), me.getId(), 10_000L);
+
+    int nThreads = 100;
+    int repeat = 5;
+    ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
+    CountDownLatch countDownLatch = new CountDownLatch(repeat);
+
+    // when
+    for (int i = 0; i < repeat; i++) {
+      executorService.execute(() -> {
+        checkingAccountService.charge(myChargeRequest);
         checkingAccountService.charge(friendChargeRequest);
-        savingAccountService.deposit(loginUserDepositRequest);
-        savingAccountService.deposit(friendDepositRequest);
-        checkingAccountService.remit(loginUserWireRequest); // 나 -> 친구 송금
-        checkingAccountService.remit(friendUserWireRequest); // 친구 -> 나 송금
+        checkingAccountService.remit(myRemitRequest); // 나 -> 친구 송금
+        checkingAccountService.remit(friendRemitRequest); // 친구 -> 나 송금
         countDownLatch.countDown();
       });
     }
@@ -126,23 +128,143 @@ class AccountConcurrentTest extends IntegrationTestSupport {
     executorService.shutdown();
 
     // then
-    CheckingAccount loginUserCheckingAccount = checkingAccountRepository.findByOwnerId(
-        loginUser.getId()).get();
+    CheckingAccount myCheckingAccount =
+        checkingAccountRepository.findByOwnerId(me.getId()).get();
 
-    CheckingAccount friendCheckingAccount = checkingAccountRepository.findByOwnerId(friend.getId())
-        .get();
+    CheckingAccount friendCheckingAccount =
+        checkingAccountRepository.findByOwnerId(friend.getId()).get();
 
-    SavingAccount loginUserSavingAccount = savingAccountRepository.findById(
-        loginUserSavingAccountCreateResponse.getSavingAccountId()).get();
+    assertThat(myCheckingAccount.getBalance()).isEqualTo(100_000L);
+    assertThat(friendCheckingAccount.getBalance()).isEqualTo(100_000L);
+  }
 
-    SavingAccount friendSavingAccount = savingAccountRepository.findById(
-        friendSavingAccountCreateResponse.getSavingAccountId()).get();
+  @Test
+  @DisplayName("메인계좌 충전, 친구에게 송금 데드락 테스트")
+  void charge_remit_concurrent_deadlock() throws InterruptedException {
+    // given
+    Member me = saveAndGetMember(ME);
+    Member friend = saveAndGetMember(FRIEND);
 
-    // 메인계좌 100만원 (-)5 * 적금계좌입금, (+)5 * 메인계좌충전, (-)친구계좌에 송금, (+)친구계좌로부터 수신
-    assertThat(loginUserCheckingAccount.getBalance()).isEqualTo(1_000_000L);
-    assertThat(loginUserSavingAccount.getAmount()).isEqualTo(50_000L);
+    saveCheckingAccount(me, 0L);
+    saveCheckingAccount(friend, 0L);
 
-    assertThat(friendCheckingAccount.getBalance()).isEqualTo(1_000_000L);
+    // 내 메인 계좌 충전 request
+    CheckingAccountChargeRequest myChargeRequest =
+        new CheckingAccountChargeRequest(me.getId(), 10_000L);
+
+    // 친구 메인 계좌 충전 request
+    CheckingAccountChargeRequest friendChargeRequest =
+        new CheckingAccountChargeRequest(friend.getId(), 10_000L);
+
+    // 둘 모두 즉시송금으로 변경
+    enableImmediateTransferOfMember(me);
+    enableImmediateTransferOfMember(friend);
+
+    // 내가 친구에게 송금 request
+    CheckingAccountRemitRequest myRemitRequest = new CheckingAccountRemitRequest(
+        me.getId(), friend.getId(), 20_000L);
+
+    // 친구가 나에게 송금
+    CheckingAccountRemitRequest friendRemitRequest = new CheckingAccountRemitRequest(
+        friend.getId(), me.getId(), 20_000L);
+
+    int nThreads = 100;
+    int repeat = 100;
+    ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
+    CountDownLatch countDownLatch = new CountDownLatch(repeat);
+
+    // when
+    for (int i = 0; i < repeat; i++) {
+      executorService.execute(() -> {
+        checkingAccountService.charge(myChargeRequest);
+        checkingAccountService.charge(friendChargeRequest);
+        checkingAccountService.remit(myRemitRequest); // 나 -> 친구 송금
+        checkingAccountService.remit(friendRemitRequest); // 친구 -> 나 송금
+        countDownLatch.countDown();
+      });
+    }
+
+    countDownLatch.await();
+    executorService.shutdown();
+
+    // then
+    // 4개의 요청을 100번동안 반복했을 때, 데드락이 발생하지 않으면 테스트가 통과한 것으로 간주.
+  }
+
+  @Test
+  @DisplayName("메인계좌 충전, 적금계좌 입금, 송금 동시성 테스트")
+  void charge_saving_deposit_remit_concurrent() throws InterruptedException {
+    // given
+    Member me = saveAndGetMember(ME);
+    Member friend = saveAndGetMember(FRIEND);
+
+    saveCheckingAccount(me, 500_000L);
+    saveCheckingAccount(friend, 500_000L);
+
+    SavingAccount mySavingAccount = saveSavingAccount(me);
+    SavingAccount friendSavingAccount = saveSavingAccount(friend);
+
+    // 내 메인 계좌 충전 request
+    CheckingAccountChargeRequest myChargeRequest =
+        new CheckingAccountChargeRequest(me.getId(), 10_000L);
+
+    // 친구 메인 계좌 충전 request
+    CheckingAccountChargeRequest friendChargeRequest =
+        new CheckingAccountChargeRequest(friend.getId(), 10_000L);
+
+    // 내 적금 계좌 입금 request
+    SavingAccountDepositRequest myDepositRequest =
+        new SavingAccountDepositRequest(me.getId(), mySavingAccount.getId(), 10_000L);
+
+    // 내 적금 계좌 입금 request
+    SavingAccountDepositRequest friendDepositRequest =
+        new SavingAccountDepositRequest(friend.getId(), friendSavingAccount.getId(), 10_000L);
+
+    // 둘 모두 즉시송금으로 변경
+    enableImmediateTransferOfMember(me);
+    enableImmediateTransferOfMember(friend);
+
+    // 내가 친구에게 송금 request
+    CheckingAccountRemitRequest myRemitRequest = new CheckingAccountRemitRequest(
+        me.getId(), friend.getId(), 10_000L);
+
+    // 친구가 나에게 송금
+    CheckingAccountRemitRequest friendRemitRequest = new CheckingAccountRemitRequest(
+        friend.getId(), me.getId(), 10_000L);
+
+    int nThreads = 100;
+    int repeat = 5;
+    ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
+    CountDownLatch countDownLatch = new CountDownLatch(repeat);
+
+    // when
+    for (int i = 0; i < repeat; i++) {
+      executorService.execute(() -> {
+        checkingAccountService.charge(myChargeRequest);
+        checkingAccountService.charge(friendChargeRequest);
+        savingAccountService.deposit(myDepositRequest);
+        savingAccountService.deposit(friendDepositRequest);
+        checkingAccountService.remit(myRemitRequest); // 나 -> 친구 송금
+        checkingAccountService.remit(friendRemitRequest); // 친구 -> 나 송금
+        countDownLatch.countDown();
+      });
+    }
+
+    countDownLatch.await();
+    executorService.shutdown();
+
+    CheckingAccount myCheckingAccount = checkingAccountRepository.findByOwnerId(me.getId()).get();
+    CheckingAccount friendCheckingAccount = checkingAccountRepository.findByOwnerId(friend.getId()).get();
+
+    mySavingAccount = savingAccountRepository.findByOwnerId(me.getId()).get(0);
+    friendSavingAccount = savingAccountRepository.findByOwnerId(friend.getId()).get(0);
+
+    // then
+    // 초기 금액 := 500_000 -> + (10000원 충전 * 5) - (10000원 적금 * 5) - (서로에게 10000원 송금 * 5)
+    assertThat(myCheckingAccount.getBalance()).isEqualTo(500_000L);
+    assertThat(friendCheckingAccount.getBalance()).isEqualTo(500_000L);
+
+    assertThat(mySavingAccount.getAmount()).isEqualTo(50_000L);
     assertThat(friendSavingAccount.getAmount()).isEqualTo(50_000L);
   }
 }
