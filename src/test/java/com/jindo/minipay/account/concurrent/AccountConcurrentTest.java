@@ -15,6 +15,7 @@ import com.jindo.minipay.member.service.MemberService;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -189,6 +190,14 @@ class AccountConcurrentTest extends IntegrationTestSupport {
 
     // then
     // 4개의 요청을 100번동안 반복했을 때, 데드락이 발생하지 않으면 테스트가 통과한 것으로 간주.
+    // 각자 100만원 충전, 서로에게 200만원 송금
+    // 두 계좌를 합쳐서 봤을 때, 200만원 이상이어야한다.
+    CheckingAccount myCheckingAccount =
+        checkingAccountRepository.findByOwnerId(me.getId()).get();
+    CheckingAccount friendCheckingAccount =
+        checkingAccountRepository.findByOwnerId(friend.getId()).get();
+    long sumOfBalance = myCheckingAccount.getBalance() + friendCheckingAccount.getBalance();
+    Assertions.assertThat(sumOfBalance).isGreaterThanOrEqualTo(2_000_000L);
   }
 
   @Test
