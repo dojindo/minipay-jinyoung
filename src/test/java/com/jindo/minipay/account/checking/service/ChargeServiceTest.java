@@ -9,10 +9,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.jindo.minipay.account.checking.dto.CheckingAccountChargeRequest;
-import com.jindo.minipay.account.checking.entity.ChargeAmount;
+import com.jindo.minipay.account.checking.entity.ChargeLimit;
 import com.jindo.minipay.account.checking.entity.CheckingAccount;
 import com.jindo.minipay.account.checking.repository.CheckingAccountRepository;
-import com.jindo.minipay.account.checking.repository.redis.ChargeAmountRepository;
+import com.jindo.minipay.account.checking.repository.redis.ChargeLimitRepository;
 import com.jindo.minipay.global.exception.CustomException;
 import com.jindo.minipay.member.entity.Member;
 import java.time.Duration;
@@ -33,7 +33,7 @@ class ChargeServiceTest {
   ChargeService chargeService;
 
   @Mock
-  ChargeAmountRepository chargeAmountRepository;
+  ChargeLimitRepository chargeLimitRepository;
 
   @Mock
   CheckingAccountRepository checkingAccountRepository;
@@ -44,14 +44,14 @@ class ChargeServiceTest {
 
     long amount = 10_000L;
 
-    CheckingAccountChargeRequest request = new CheckingAccountChargeRequest(1L, amount);
-
     Member owner = Member.builder()
-        .id(request.getMemberId())
+        .id(1L)
         .build();
 
+    CheckingAccountChargeRequest request = new CheckingAccountChargeRequest(owner.getId(), amount);
+
     CheckingAccount checkingAccount = CheckingAccount.builder()
-        .id(1L)
+        .id(owner.getId())
         .owner(owner)
         .accountNumber("111112345678")
         .balance(request.getAmount())
@@ -61,14 +61,15 @@ class ChargeServiceTest {
     @DisplayName("실패 - 일일 충전 한도를 초과했을 때")
     void charge_limit_exceeded() {
       // given
-      ChargeAmount limitMaximumAmount = new ChargeAmount(owner.getId(), ACCOUNT_CHARGE_LIMIT);
+      ChargeLimit limitMaximumAmount = new ChargeLimit(request.getMemberId(),
+          ACCOUNT_CHARGE_LIMIT);
 
-      when(chargeAmountRepository.findByMemberId(request.getMemberId())).thenReturn(
+      when(chargeLimitRepository.findByMemberId(request.getMemberId())).thenReturn(
           Optional.of(limitMaximumAmount));
 
       // when
       // then
-      assertThatThrownBy(() -> chargeService.charge(owner.getId(), amount))
+      assertThatThrownBy(() -> chargeService.charge(checkingAccount, owner.getId(), amount))
           .isInstanceOf(CustomException.class)
           .hasMessage(CHARGE_LIMIT_EXCEEDED.getMessage());
     }
@@ -78,19 +79,16 @@ class ChargeServiceTest {
     void charge() {
       // given
       long balance = checkingAccount.getBalance();
-      ChargeAmount chargeAmount = new ChargeAmount(owner.getId(), 10_000L);
+      ChargeLimit chargeLimit = new ChargeLimit(owner.getId(), 10_000L);
 
-      when(chargeAmountRepository.findByMemberId(request.getMemberId())).thenReturn(
-          Optional.of(chargeAmount));
-
-      when(checkingAccountRepository.findByOwnerIdForUpdate(owner.getId())).thenReturn(
-          Optional.of(checkingAccount));
+      when(chargeLimitRepository.findByMemberId(request.getMemberId())).thenReturn(
+          Optional.of(chargeLimit));
 
       // when
-      chargeService.charge(owner.getId(), amount);
+      chargeService.charge(checkingAccount, owner.getId(), amount);
 
       // then
-      verify(chargeAmountRepository, times(1)).save(any(Long.class), any(Long.class),
+      verify(chargeLimitRepository, times(1)).save(any(Long.class), any(Long.class),
           any(Duration.class));
       Assertions.assertThat(checkingAccount.getBalance()).isEqualTo(balance + amount);
     }
