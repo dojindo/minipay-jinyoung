@@ -2,12 +2,12 @@ package com.jindo.minipay.settlement.service;
 
 import static com.jindo.minipay.settlement.constant.SettlementConstants.RANDOM_SETTLEMENT_UNIT;
 
+import com.jindo.minipay.member.repository.MemberRepository;
 import com.jindo.minipay.settlement.dto.SettleDistributeRequest;
 import com.jindo.minipay.settlement.dto.SettleDistributeResponse;
-import com.jindo.minipay.settlement.type.SettlementType;
-import com.jindo.minipay.member.repository.MemberRepository;
 import com.jindo.minipay.settlement.repository.ParticipantSettlementRepository;
 import com.jindo.minipay.settlement.repository.SettlementRepository;
+import com.jindo.minipay.settlement.type.SettlementType;
 import java.util.Random;
 import org.springframework.stereotype.Service;
 

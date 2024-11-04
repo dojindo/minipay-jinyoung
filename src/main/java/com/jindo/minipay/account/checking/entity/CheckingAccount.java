@@ -1,6 +1,6 @@
 package com.jindo.minipay.account.checking.entity;
 
-import static com.jindo.minipay.global.exception.ErrorCode.*;
+import static com.jindo.minipay.global.exception.ErrorCode.BALANCE_NOT_ENOUGH;
 
 import com.jindo.minipay.global.entity.BaseTimeEntity;
 import com.jindo.minipay.global.exception.CustomException;

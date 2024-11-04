@@ -1,8 +1,8 @@
 package com.jindo.minipay.settlement.entity;
 
-import com.jindo.minipay.settlement.type.SettlementType;
 import com.jindo.minipay.global.entity.BaseTimeEntity;
 import com.jindo.minipay.member.entity.Member;
+import com.jindo.minipay.settlement.type.SettlementType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

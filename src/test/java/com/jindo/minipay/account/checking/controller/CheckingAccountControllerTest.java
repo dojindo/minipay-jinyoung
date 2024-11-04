@@ -7,8 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jindo.minipay.account.checking.dto.CheckingAccountChargeRequest;
 import com.jindo.minipay.account.checking.dto.ChargeResponse;
+import com.jindo.minipay.account.checking.dto.CheckingAccountChargeRequest;
 import com.jindo.minipay.account.checking.dto.CheckingAccountRemitRequest;
 import com.jindo.minipay.account.checking.dto.RemitResponse;
 import com.jindo.minipay.account.checking.service.CheckingAccountService;

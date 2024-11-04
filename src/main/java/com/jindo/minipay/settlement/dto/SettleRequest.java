@@ -1,11 +1,11 @@
 package com.jindo.minipay.settlement.dto;
 
-import static com.jindo.minipay.settlement.type.SettlementType.RANDOM;
 import static com.jindo.minipay.global.exception.ErrorCode.INSUFFICIENT_SETTLE_AMOUNT;
 import static com.jindo.minipay.global.exception.ErrorCode.INVALID_SETTLE_REQUEST;
 import static com.jindo.minipay.settlement.constant.SettlementConstants.RANDOM_SETTLEMENT_MIN_AMOUNT;
 import static com.jindo.minipay.settlement.constant.SettlementConstants.SETTLEMENT_PARTICIPANTS_MAX_SIZE;
 import static com.jindo.minipay.settlement.constant.SettlementConstants.SETTLEMENT_PARTICIPANTS_MIN_SIZE;
+import static com.jindo.minipay.settlement.type.SettlementType.RANDOM;
 
 import com.jindo.minipay.global.annotation.ValidEnum;
 import com.jindo.minipay.global.exception.CustomException;
