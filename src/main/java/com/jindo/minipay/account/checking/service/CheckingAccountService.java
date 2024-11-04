@@ -1,6 +1,7 @@
 package com.jindo.minipay.account.checking.service;
 
 import static com.jindo.minipay.account.common.type.AccountType.CHECKING;
+import static com.jindo.minipay.global.exception.ErrorCode.ACCOUNT_NOT_FOUND;
 import static com.jindo.minipay.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 
 import com.jindo.minipay.account.checking.dto.ChargeResponse;
@@ -43,11 +44,19 @@ public class CheckingAccountService {
 
   @Transactional
   public ChargeResponse charge(CheckingAccountChargeRequest request) {
-    return new ChargeResponse(chargeService.charge(request.getMemberId(), request.getAmount()));
+    CheckingAccount checkingAccount = getCheckingAccountForUpdate(request.getMemberId());
+    return new ChargeResponse(
+        chargeService.charge(checkingAccount, request.getMemberId(), request.getAmount()));
   }
 
   @Transactional
   public RemitResponse remit(CheckingAccountRemitRequest request) {
     return remitServiceFinder.find(request.getSenderId()).remit(request);
+  }
+
+  private CheckingAccount getCheckingAccountForUpdate(Long memberId) {
+    return checkingAccountRepository
+        .findByOwnerIdForUpdate(memberId)
+        .orElseThrow(() -> new CustomException(ACCOUNT_NOT_FOUND));
   }
 }
