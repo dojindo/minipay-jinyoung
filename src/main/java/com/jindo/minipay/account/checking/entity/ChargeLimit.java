@@ -12,7 +12,7 @@ import org.springframework.data.redis.core.RedisHash;
 @NoArgsConstructor
 @AllArgsConstructor
 @RedisHash(value = CHARGE_AMOUNT_KEY)
-public class ChargeAmount {
+public class ChargeLimit {
 
   @Id
   private Long memberId;

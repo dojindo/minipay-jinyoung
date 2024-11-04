@@ -1,6 +1,6 @@
 package com.jindo.minipay.account.checking.repository.redis;
 
-import com.jindo.minipay.account.checking.entity.ChargeAmount;
+import com.jindo.minipay.account.checking.entity.ChargeLimit;
 import com.jindo.minipay.account.common.constant.AccountConstants;
 import java.time.Duration;
 import java.util.Optional;
@@ -10,18 +10,18 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class ChargeAmountRepository {
+public class ChargeLimitRepository {
 
   private final RedisTemplate<String, Object> redisTemplate;
 
   public void save(Long memberId, long amount, Duration ttl) {
-    ChargeAmount chargeAmount = new ChargeAmount(memberId, amount);
+    ChargeLimit chargeLimit = new ChargeLimit(memberId, amount);
     String key = AccountConstants.CHARGE_AMOUNT_KEY + memberId;
-    redisTemplate.opsForValue().set(key, chargeAmount, ttl);
+    redisTemplate.opsForValue().set(key, chargeLimit, ttl);
   }
 
-  public Optional<ChargeAmount> findByMemberId(Long memberId) {
-    return Optional.ofNullable((ChargeAmount) redisTemplate.opsForValue()
+  public Optional<ChargeLimit> findByMemberId(Long memberId) {
+    return Optional.ofNullable((ChargeLimit) redisTemplate.opsForValue()
         .get(AccountConstants.CHARGE_AMOUNT_KEY + memberId));
   }
 }
