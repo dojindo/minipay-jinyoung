@@ -1,6 +1,5 @@
 package com.jindo.minipay.account.checking.service;
 
-import static com.jindo.minipay.global.exception.ErrorCode.ACCOUNT_NOT_FOUND;
 import static com.jindo.minipay.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static com.jindo.minipay.pending.type.PendingStatus.PENDING;
 
@@ -19,15 +18,13 @@ import org.springframework.stereotype.Service;
 public class PendingRemitService extends RemitService {
 
   private final MemberRepository memberRepository;
-  private final CheckingAccountRepository checkingAccountRepository;
   private final PendingTransferRepository pendingTransferRepository;
 
   public PendingRemitService(ChargeService chargeService, MemberRepository memberRepository,
       CheckingAccountRepository checkingAccountRepository,
       PendingTransferRepository pendingTransferRepository) {
-    super(chargeService);
+    super(chargeService, checkingAccountRepository);
     this.memberRepository = memberRepository;
-    this.checkingAccountRepository = checkingAccountRepository;
     this.pendingTransferRepository = pendingTransferRepository;
   }
 
@@ -48,7 +45,7 @@ public class PendingRemitService extends RemitService {
     CheckingAccount senderAccount = getCheckingAccountForUpdate(senderId);
 
     if (senderAccount.getBalance() < amount) {
-      autoCharge(senderAccount.getBalance(), amount, senderId);
+      autoCharge(senderAccount, senderAccount.getBalance(), amount, senderId);
     }
 
     senderAccount.withdraw(amount);
@@ -63,12 +60,6 @@ public class PendingRemitService extends RemitService {
     pendingTransferRepository.save(pendingTransfer);
 
     return RemitResponse.of(senderAccount);
-  }
-
-  private CheckingAccount getCheckingAccountForUpdate(Long memberId) {
-    return checkingAccountRepository
-        .findByOwnerIdForUpdate(memberId)
-        .orElseThrow(() -> new CustomException(ACCOUNT_NOT_FOUND));
   }
 
   private Member getMember(Long senderId) {
