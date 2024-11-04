@@ -44,14 +44,15 @@ class ChargeServiceTest {
 
     long amount = 10_000L;
 
+    Long ownerId = 1L;
+
     Member owner = Member.builder()
-        .id(1L)
+        .id(ownerId)
         .build();
 
-    CheckingAccountChargeRequest request = new CheckingAccountChargeRequest(owner.getId(), amount);
+    CheckingAccountChargeRequest request = new CheckingAccountChargeRequest(ownerId, amount);
 
     CheckingAccount checkingAccount = CheckingAccount.builder()
-        .id(owner.getId())
         .owner(owner)
         .accountNumber("111112345678")
         .balance(request.getAmount())
