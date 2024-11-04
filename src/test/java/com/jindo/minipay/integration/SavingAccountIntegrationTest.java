@@ -1,7 +1,5 @@
 package com.jindo.minipay.integration;
 
-import static com.jindo.minipay.account.common.type.AccountType.CHECKING;
-import static com.jindo.minipay.account.common.type.AccountType.SAVING;
 import static jakarta.servlet.http.HttpServletResponse.SC_CREATED;
 import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -73,8 +71,8 @@ class SavingAccountIntegrationTest extends IntegrationTestSupport {
   void depositAmount() {
     // given
     Member owner = saveAndGetMember("testUser1");
-    saveCheckingAccount(owner);
-    SavingAccount savingAccount = saveAndGetSavingAccount(owner);
+    saveCheckingAccount(owner, 50_000L);
+    SavingAccount savingAccount = saveSavingAccount(owner);
 
     SavingAccountDepositRequest request = SavingAccountDepositRequest.builder()
         .ownerId(owner.getId())
@@ -102,22 +100,5 @@ class SavingAccountIntegrationTest extends IntegrationTestSupport {
         savingAccount.getId());
     assertThat(updatedSavingAccount).isPresent();
     assertThat(updatedSavingAccount.get().getAmount()).isEqualTo(request.getAmount());
-  }
-
-  private void saveCheckingAccount(Member owner) {
-    checkingAccountRepository.save(
-        CheckingAccount.builder()
-            .owner(owner)
-            .accountNumber(accountNumberCreator.create(CHECKING))
-            .balance(DEFAULT_AMOUNT)
-            .build());
-  }
-
-  private SavingAccount saveAndGetSavingAccount(Member owner) {
-    return savingAccountRepository.save(
-        SavingAccount.builder()
-            .owner(owner)
-            .accountNumber(accountNumberCreator.create(SAVING))
-            .build());
   }
 }

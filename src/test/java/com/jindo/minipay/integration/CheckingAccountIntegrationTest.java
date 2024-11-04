@@ -1,7 +1,6 @@
 package com.jindo.minipay.integration;
 
-import static com.jindo.minipay.account.common.type.AccountType.CHECKING;
-import static com.jindo.minipay.pending.type.PendingStatus.*;
+import static com.jindo.minipay.pending.type.PendingStatus.PENDING;
 import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -11,11 +10,9 @@ import com.jindo.minipay.account.checking.dto.CheckingAccountRemitRequest;
 import com.jindo.minipay.account.checking.entity.CheckingAccount;
 import com.jindo.minipay.account.common.util.AccountNumberCreator;
 import com.jindo.minipay.member.entity.Member;
-import com.jindo.minipay.member.entity.MemberSettings;
 import com.jindo.minipay.pending.entity.PendingTransfer;
 import io.restassured.RestAssured;
 import java.util.Optional;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +31,7 @@ class CheckingAccountIntegrationTest extends IntegrationTestSupport {
   void chargeAmount() {
     // given
     Member owner = saveAndGetMember("testUser1");
-    saveCheckingAccount(owner);
+    saveCheckingAccount(owner, DEFAULT_AMOUNT);
 
     CheckingAccountChargeRequest request = CheckingAccountChargeRequest.builder()
         .memberId(owner.getId())
@@ -64,10 +61,10 @@ class CheckingAccountIntegrationTest extends IntegrationTestSupport {
     // given
     Member sender = saveAndGetMember("testUser1");
     Member receiver = saveAndGetMember("testUser2");
-    saveCheckingAccount(sender);
+    saveCheckingAccount(sender, DEFAULT_AMOUNT);
     enableImmediateTransferOfMember(sender); // 송신자 : 즉시 송금 설정 ON
 
-    saveCheckingAccount(receiver);
+    saveCheckingAccount(receiver, DEFAULT_AMOUNT);
 
     CheckingAccountRemitRequest request = CheckingAccountRemitRequest.builder()
         .senderId(sender.getId())
@@ -105,10 +102,10 @@ class CheckingAccountIntegrationTest extends IntegrationTestSupport {
     // given
     Member sender = saveAndGetMember("testUser1");
     Member receiver = saveAndGetMember("testUser2");
-    saveCheckingAccount(sender);
+    saveCheckingAccount(sender, DEFAULT_AMOUNT);
     disableImmediateTransferOfMember(sender); // 즉시 송금 설정 OFF
 
-    saveCheckingAccount(receiver);
+    saveCheckingAccount(receiver, 0L);
 
     CheckingAccountRemitRequest request = CheckingAccountRemitRequest.builder()
         .senderId(sender.getId())
@@ -140,33 +137,10 @@ class CheckingAccountIntegrationTest extends IntegrationTestSupport {
     assertThat(senderCheckingAccount.get().getBalance())
         .isEqualTo(DEFAULT_AMOUNT - request.getAmount());
     assertThat(receiverCheckingAccount.get().getBalance())
-        .isEqualTo(DEFAULT_AMOUNT);
+        .isZero();
     assertThat(pendingTransfer.get().getStatus())
         .isEqualTo(PENDING);
     assertThat(pendingTransfer.get().getAmount())
         .isEqualTo(request.getAmount());
-  }
-
-  private void enableImmediateTransferOfMember(Member sender) {
-    Optional<MemberSettings> senderSettings = memberSettingsRepository.findByMember(sender);
-    Assertions.assertThat(senderSettings).isPresent();
-    senderSettings.get().enableImmediateTransfer();
-    memberSettingsRepository.save(senderSettings.get());
-  }
-
-  private void disableImmediateTransferOfMember(Member sender) {
-    Optional<MemberSettings> senderSettings = memberSettingsRepository.findByMember(sender);
-    Assertions.assertThat(senderSettings).isPresent();
-    senderSettings.get().disableImmediateTransfer();
-    memberSettingsRepository.save(senderSettings.get());
-  }
-
-  private void saveCheckingAccount(Member owner) {
-    checkingAccountRepository.save(
-        CheckingAccount.builder()
-            .owner(owner)
-            .accountNumber(accountNumberCreator.create(CHECKING))
-            .balance(DEFAULT_AMOUNT)
-            .build());
   }
 }
