@@ -1,7 +1,6 @@
 package com.jindo.minipay.account.checking.service;
 
 import static com.jindo.minipay.global.exception.ErrorCode.MEMBER_NOT_FOUND;
-import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -19,7 +18,6 @@ import com.jindo.minipay.global.exception.CustomException;
 import com.jindo.minipay.member.entity.Member;
 import com.jindo.minipay.member.repository.MemberRepository;
 import java.util.Optional;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -99,7 +97,14 @@ class CheckingAccountServiceTest {
     @DisplayName("메인 계좌 충전 성공")
     void charge_success() {
       // given
-      given(chargeService.charge(request.getMemberId(), amount))
+      CheckingAccount checkingAccount = CheckingAccount.builder()
+          .balance(0L)
+          .build();
+
+      given(checkingAccountRepository.findByOwnerIdForUpdate(request.getMemberId()))
+          .willReturn(Optional.of(checkingAccount));
+
+      given(chargeService.charge(checkingAccount, request.getMemberId(), amount))
           .willReturn(10_000L);
 
       // when
