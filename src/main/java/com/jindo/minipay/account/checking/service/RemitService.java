@@ -20,11 +20,17 @@ public abstract class RemitService {
 
   abstract RemitResponse remit(CheckingAccountRemitRequest request);
 
-  final public void autoCharge(
+  protected final void autoCharge(
       CheckingAccount checkingAccount, long balance, long amount, Long senderId) {
     long autoChargeAmount = calculateAutoChargeAmount(balance, amount);
 
     chargeService.charge(checkingAccount, senderId, autoChargeAmount);
+  }
+
+  protected final CheckingAccount getCheckingAccountForUpdate(Long memberId) {
+    return checkingAccountRepository
+        .findByOwnerIdForUpdate(memberId)
+        .orElseThrow(() -> new CustomException(ACCOUNT_NOT_FOUND));
   }
 
   private long calculateAutoChargeAmount(long balance, long amount) {
@@ -32,11 +38,5 @@ public abstract class RemitService {
     long result = (gap / AUTO_CHARGE_UNIT) * AUTO_CHARGE_UNIT;
 
     return gap % AUTO_CHARGE_UNIT > 0 ? result + AUTO_CHARGE_UNIT : result;
-  }
-
-  final public CheckingAccount getCheckingAccountForUpdate(Long memberId) {
-    return checkingAccountRepository
-        .findByOwnerIdForUpdate(memberId)
-        .orElseThrow(() -> new CustomException(ACCOUNT_NOT_FOUND));
   }
 }

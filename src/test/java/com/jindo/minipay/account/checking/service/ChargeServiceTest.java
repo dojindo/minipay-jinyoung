@@ -69,7 +69,7 @@ class ChargeServiceTest {
 
       // when
       // then
-      assertThatThrownBy(() -> chargeService.charge(checkingAccount, owner.getId(), amount))
+      assertThatThrownBy(() -> chargeService.charge(checkingAccount, request.getMemberId(), amount))
           .isInstanceOf(CustomException.class)
           .hasMessage(CHARGE_LIMIT_EXCEEDED.getMessage());
     }
