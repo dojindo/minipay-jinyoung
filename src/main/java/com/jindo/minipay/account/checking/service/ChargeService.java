@@ -1,46 +1,37 @@
 package com.jindo.minipay.account.checking.service;
 
 import static com.jindo.minipay.account.common.constant.AccountConstants.ACCOUNT_CHARGE_LIMIT;
-import static com.jindo.minipay.global.exception.ErrorCode.ACCOUNT_NOT_FOUND;
 import static com.jindo.minipay.global.exception.ErrorCode.CHARGE_LIMIT_EXCEEDED;
 
-import com.jindo.minipay.account.checking.entity.ChargeAmount;
+import com.jindo.minipay.account.checking.entity.ChargeLimit;
 import com.jindo.minipay.account.checking.entity.CheckingAccount;
-import com.jindo.minipay.account.checking.repository.CheckingAccountRepository;
-import com.jindo.minipay.account.checking.repository.redis.ChargeAmountRepository;
+import com.jindo.minipay.account.checking.repository.redis.ChargeLimitRepository;
 import com.jindo.minipay.global.exception.CustomException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class ChargeService {
+  private final ChargeLimitRepository chargeLimitRepository;
 
-  private final CheckingAccountRepository checkingAccountRepository;
-  private final ChargeAmountRepository chargeAmountRepository;
+  public long charge(CheckingAccount checkingAccount, Long ownerId, long amount) {
+    ChargeLimit chargeLimit = getChargeLimitOfMember(ownerId);
 
-  @Transactional
-  public long charge(Long ownerId, long amount) {
-    ChargeAmount chargeAmount = getChargeAmountOfMember(ownerId);
-
-    long afterChargeAmount = chargeAmount.getAmount() + amount;
+    long afterChargeAmount = chargeLimit.getAmount() + amount;
     validateChargeLimit(afterChargeAmount);
 
-    CheckingAccount mainAccount = checkingAccountRepository.findByOwnerIdForUpdate(ownerId)
-        .orElseThrow(() -> new CustomException(ACCOUNT_NOT_FOUND));
-
-    mainAccount.deposit(amount);
+    checkingAccount.deposit(amount);
     updateChargeAmountOfMember(ownerId, afterChargeAmount);
 
-    return mainAccount.getBalance();
+    return checkingAccount.getBalance();
   }
 
-  private ChargeAmount getChargeAmountOfMember(Long memberId) {
-    return chargeAmountRepository.findByMemberId(memberId)
-        .orElseGet(() -> new ChargeAmount(memberId, 0L));
+  private ChargeLimit getChargeLimitOfMember(Long memberId) {
+    return chargeLimitRepository.findByMemberId(memberId)
+        .orElseGet(() -> new ChargeLimit(memberId, 0L));
   }
 
   private void validateChargeLimit(long afterChargeAmount) {
@@ -50,7 +41,7 @@ public class ChargeService {
   }
 
   private void updateChargeAmountOfMember(Long memberId, long amount) {
-    chargeAmountRepository.save(memberId, amount, timeToMidnight());
+    chargeLimitRepository.save(memberId, amount, timeToMidnight());
   }
 
   private Duration timeToMidnight() {
