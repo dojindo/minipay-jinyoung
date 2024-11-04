@@ -121,7 +121,7 @@ class ImmediateRemitServiceTest {
       RemitResponse response = immediateRemitService.remit(request);
 
       // then
-      assertThat(response.getBalance()).isEqualTo(0L);
+      assertThat(response.getBalance()).isZero();
     }
   }
 }

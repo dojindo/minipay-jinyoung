@@ -134,7 +134,7 @@ class PendingRemitServiceTest {
 
       // then
       verify(pendingTransferRepository).save(any(PendingTransfer.class));
-      assertThat(response.getBalance()).isEqualTo(0L);
+      assertThat(response.getBalance()).isZero();
     }
   }
 }
