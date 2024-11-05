@@ -40,7 +40,7 @@ class AccountConcurrentTest extends IntegrationTestSupport {
     // given
     Member me = saveAndGetMember(ME);
 
-    saveCheckingAccount(me, 50_000L);
+    saveCheckingAccount(me, 500_000L);
 
     SavingAccount mySavingAccount = saveSavingAccount(me);
 
@@ -52,16 +52,20 @@ class AccountConcurrentTest extends IntegrationTestSupport {
     SavingAccountDepositRequest myDepositRequest =
         new SavingAccountDepositRequest(me.getId(), mySavingAccount.getId(), 10_000L);
 
-    int nThreads = 100;
-    int repeat = 5;
+    int nThreads = 30;
+    int repeat = 100;
     ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
     CountDownLatch countDownLatch = new CountDownLatch(repeat);
 
     // when
     for (int i = 0; i < repeat; i++) {
+      final int finalI = i;
       executorService.execute(() -> {
-        checkingAccountService.charge(myChargeRequest);
-        savingAccountService.deposit(myDepositRequest);
+        if (finalI % 2 == 0) {
+          checkingAccountService.charge(myChargeRequest);
+        } else {
+          savingAccountService.deposit(myDepositRequest);
+        }
         countDownLatch.countDown();
       });
     }
@@ -74,9 +78,9 @@ class AccountConcurrentTest extends IntegrationTestSupport {
     mySavingAccount = savingAccountRepository.findByOwnerId(me.getId()).get(0);
 
     // then
-    // 초기 금액 50000 + (10000원 충전 * 5) - (10000원 적금 * 5) = 50000원
-    assertThat(myCheckingAccount.getBalance()).isEqualTo(50_000L);
-    assertThat(mySavingAccount.getAmount()).isEqualTo(50_000L);
+    // 초기 금액 500_000 + (10_000원 충전 * 5) - (10_000원 적금 * 5) = 500_000
+    assertThat(myCheckingAccount.getBalance()).isEqualTo(500_000L);
+    assertThat(mySavingAccount.getAmount()).isEqualTo(500_000L);
   }
 
   @Test
@@ -86,8 +90,8 @@ class AccountConcurrentTest extends IntegrationTestSupport {
     Member me = saveAndGetMember(ME);
     Member friend = saveAndGetMember(FRIEND);
 
-    saveCheckingAccount(me, 50_000L);
-    saveCheckingAccount(friend, 50_000L);
+    saveCheckingAccount(me, 1_000_000L);
+    saveCheckingAccount(friend, 1_000_000L);
 
     // 내 메인 계좌 충전 request
     CheckingAccountChargeRequest myChargeRequest =
@@ -109,17 +113,29 @@ class AccountConcurrentTest extends IntegrationTestSupport {
     CheckingAccountRemitRequest friendRemitRequest = new CheckingAccountRemitRequest(
         friend.getId(), me.getId(), 10_000L);
 
-    int nThreads = 100;
-    int repeat = 5;
+    int nThreads = 30;
+    int repeat = 100;
     ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
-    CountDownLatch countDownLatch = new CountDownLatch(repeat);
+    CountDownLatch countDownLatch = new CountDownLatch(repeat * 4);
 
     // when
     for (int i = 0; i < repeat; i++) {
       executorService.execute(() -> {
-        checkingAccountService.charge(myChargeRequest);
-        checkingAccountService.charge(friendChargeRequest);
+        checkingAccountService.charge(myChargeRequest); // 내 계좌 충전
+        countDownLatch.countDown();
+      });
+
+      executorService.execute(() -> {
+        checkingAccountService.charge(friendChargeRequest); // 친구 계좌 충전
+        countDownLatch.countDown();
+      });
+
+      executorService.execute(() -> {
         checkingAccountService.remit(myRemitRequest); // 나 -> 친구 송금
+        countDownLatch.countDown();
+      });
+
+      executorService.execute(() -> {
         checkingAccountService.remit(friendRemitRequest); // 친구 -> 나 송금
         countDownLatch.countDown();
       });
@@ -135,8 +151,8 @@ class AccountConcurrentTest extends IntegrationTestSupport {
     CheckingAccount friendCheckingAccount =
         checkingAccountRepository.findByOwnerId(friend.getId()).get();
 
-    assertThat(myCheckingAccount.getBalance()).isEqualTo(100_000L);
-    assertThat(friendCheckingAccount.getBalance()).isEqualTo(100_000L);
+    assertThat(myCheckingAccount.getBalance()).isEqualTo(2_000_000L);
+    assertThat(friendCheckingAccount.getBalance()).isEqualTo(2_000_000L);
   }
 
   @Test
@@ -169,17 +185,29 @@ class AccountConcurrentTest extends IntegrationTestSupport {
     CheckingAccountRemitRequest friendRemitRequest = new CheckingAccountRemitRequest(
         friend.getId(), me.getId(), 20_000L);
 
-    int nThreads = 100;
+    int nThreads = 30;
     int repeat = 100;
     ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
-    CountDownLatch countDownLatch = new CountDownLatch(repeat);
+    CountDownLatch countDownLatch = new CountDownLatch(repeat * 4);
 
     // when
     for (int i = 0; i < repeat; i++) {
       executorService.execute(() -> {
-        checkingAccountService.charge(myChargeRequest);
-        checkingAccountService.charge(friendChargeRequest);
+        checkingAccountService.charge(myChargeRequest); // 내 계좌 충전
+        countDownLatch.countDown();
+      });
+
+      executorService.execute(() -> {
+        checkingAccountService.charge(friendChargeRequest); // 친구 계좌 충전
+        countDownLatch.countDown();
+      });
+
+      executorService.execute(() -> {
         checkingAccountService.remit(myRemitRequest); // 나 -> 친구 송금
+        countDownLatch.countDown();
+      });
+
+      executorService.execute(() -> {
         checkingAccountService.remit(friendRemitRequest); // 친구 -> 나 송금
         countDownLatch.countDown();
       });
@@ -207,8 +235,8 @@ class AccountConcurrentTest extends IntegrationTestSupport {
     Member me = saveAndGetMember(ME);
     Member friend = saveAndGetMember(FRIEND);
 
-    saveCheckingAccount(me, 500_000L);
-    saveCheckingAccount(friend, 500_000L);
+    saveCheckingAccount(me, 1_000_000L);
+    saveCheckingAccount(friend, 1_000_000L);
 
     SavingAccount mySavingAccount = saveSavingAccount(me);
     SavingAccount friendSavingAccount = saveSavingAccount(friend);
@@ -241,19 +269,39 @@ class AccountConcurrentTest extends IntegrationTestSupport {
     CheckingAccountRemitRequest friendRemitRequest = new CheckingAccountRemitRequest(
         friend.getId(), me.getId(), 10_000L);
 
-    int nThreads = 100;
-    int repeat = 5;
+    int nThreads = 30;
+    int repeat = 100;
     ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
-    CountDownLatch countDownLatch = new CountDownLatch(repeat);
+    CountDownLatch countDownLatch = new CountDownLatch(repeat * 6);
 
     // when
     for (int i = 0; i < repeat; i++) {
       executorService.execute(() -> {
-        checkingAccountService.charge(myChargeRequest);
-        checkingAccountService.charge(friendChargeRequest);
-        savingAccountService.deposit(myDepositRequest);
-        savingAccountService.deposit(friendDepositRequest);
+        checkingAccountService.charge(myChargeRequest); // 내 계좌 충전
+        countDownLatch.countDown();
+      });
+
+      executorService.execute(() -> {
+        checkingAccountService.charge(friendChargeRequest); // 친구 계좌 충전
+        countDownLatch.countDown();
+      });
+
+      executorService.execute(() -> {
+        savingAccountService.deposit(myDepositRequest); // 나의 적금
+        countDownLatch.countDown();
+      });
+
+      executorService.execute(() -> {
+        savingAccountService.deposit(friendDepositRequest); // 친구의 적금
+        countDownLatch.countDown();
+      });
+
+      executorService.execute(() -> {
         checkingAccountService.remit(myRemitRequest); // 나 -> 친구 송금
+        countDownLatch.countDown();
+      });
+
+      executorService.execute(() -> {
         checkingAccountService.remit(friendRemitRequest); // 친구 -> 나 송금
         countDownLatch.countDown();
       });
@@ -263,17 +311,18 @@ class AccountConcurrentTest extends IntegrationTestSupport {
     executorService.shutdown();
 
     CheckingAccount myCheckingAccount = checkingAccountRepository.findByOwnerId(me.getId()).get();
-    CheckingAccount friendCheckingAccount = checkingAccountRepository.findByOwnerId(friend.getId()).get();
+    CheckingAccount friendCheckingAccount = checkingAccountRepository.findByOwnerId(friend.getId())
+        .get();
 
     mySavingAccount = savingAccountRepository.findByOwnerId(me.getId()).get(0);
     friendSavingAccount = savingAccountRepository.findByOwnerId(friend.getId()).get(0);
 
     // then
-    // 초기 금액 := 500_000 -> + (10000원 충전 * 5) - (10000원 적금 * 5) - (서로에게 10000원 송금 * 5)
-    assertThat(myCheckingAccount.getBalance()).isEqualTo(500_000L);
-    assertThat(friendCheckingAccount.getBalance()).isEqualTo(500_000L);
+    // 초기 금액 := 1_000_000 -> + (10000원 충전 * 100) - (10000원 적금 * 100) - (서로에게 10000원 송금 * 100)
+    assertThat(myCheckingAccount.getBalance()).isEqualTo(1_000_000L);
+    assertThat(friendCheckingAccount.getBalance()).isEqualTo(1_000_000L);
 
-    assertThat(mySavingAccount.getAmount()).isEqualTo(50_000L);
-    assertThat(friendSavingAccount.getAmount()).isEqualTo(50_000L);
+    assertThat(mySavingAccount.getAmount()).isEqualTo(1_000_000L);
+    assertThat(friendSavingAccount.getAmount()).isEqualTo(1_000_000L);
   }
 }
