@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CheckingAccountWireResponse {
+public class ChargeResponse {
 
   private long balance;
 

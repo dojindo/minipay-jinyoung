@@ -1,11 +1,10 @@
 package com.jindo.minipay.settlement.service;
 
-import static com.jindo.minipay.settlement.constant.SettlementConstants.*;
+import static com.jindo.minipay.settlement.constant.SettlementConstants.RANDOM_SETTLEMENT_UNIT;
 import static com.jindo.minipay.settlement.type.SettlementType.RANDOM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jindo.minipay.member.repository.MemberRepository;
-import com.jindo.minipay.settlement.constant.SettlementConstants;
 import com.jindo.minipay.settlement.dto.SettleDistributeRequest;
 import com.jindo.minipay.settlement.dto.SettleDistributeResponse;
 import com.jindo.minipay.settlement.repository.ParticipantSettlementRepository;

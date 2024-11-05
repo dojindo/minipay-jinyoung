@@ -1,13 +1,13 @@
 package com.jindo.minipay.settlement.service;
 
+import static com.jindo.minipay.global.exception.ErrorCode.NOT_EXISTS_SETTLE_TYPE;
 import static com.jindo.minipay.settlement.type.SettlementType.EQUAL;
 import static com.jindo.minipay.settlement.type.SettlementType.RANDOM;
-import static com.jindo.minipay.global.exception.ErrorCode.NOT_EXISTS_SETTLE_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.jindo.minipay.settlement.type.SettlementType;
 import com.jindo.minipay.global.exception.CustomException;
+import com.jindo.minipay.settlement.type.SettlementType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

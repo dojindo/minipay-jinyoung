@@ -2,6 +2,7 @@ package com.jindo.minipay.global.exception;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_CONFLICT;
+import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 import lombok.Getter;
@@ -21,7 +22,9 @@ public enum ErrorCode {
   NOT_EXISTS_SETTLE_TYPE(SC_BAD_REQUEST, "존재하지 않는 정산 방법입니다."),
   BALANCE_NOT_ENOUGH(SC_BAD_REQUEST, "메인 계좌에 잔액이 부족합니다."),
   INSUFFICIENT_SETTLE_AMOUNT(SC_BAD_REQUEST, "정산 금액이 너무 적습니다."),
-  INVALID_SETTLE_REQUEST(SC_BAD_REQUEST, "유효하지 않은 요청입니다.");
+  INVALID_SETTLE_REQUEST(SC_BAD_REQUEST, "유효하지 않은 요청입니다."),
+  INTERNAL_SERVER_ERROR(SC_INTERNAL_SERVER_ERROR, "알 수 없는 오류가 발생했습니다.")
+  ;
 
 
   private final int code;

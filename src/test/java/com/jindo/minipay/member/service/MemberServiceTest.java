@@ -11,8 +11,10 @@ import com.jindo.minipay.global.exception.CustomException;
 import com.jindo.minipay.global.exception.ErrorCode;
 import com.jindo.minipay.member.dto.MemberSignupRequest;
 import com.jindo.minipay.member.entity.Member;
+import com.jindo.minipay.member.entity.MemberSettings;
 import com.jindo.minipay.member.event.MemberSignupEvent;
 import com.jindo.minipay.member.repository.MemberRepository;
+import com.jindo.minipay.member.repository.MemberSettingsRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,9 @@ class MemberServiceTest {
 
   @Mock
   MemberRepository memberRepository;
+
+  @Mock
+  MemberSettingsRepository memberSettingsRepository;
 
   @Mock
   ApplicationEventPublisher eventPublisher;
@@ -47,7 +52,6 @@ class MemberServiceTest {
     @DisplayName("실패 - 유저네임이 중복된 경우")
     void signup_conflict_username() {
       // given
-
       // when
       given(memberRepository.existsByUsername(memberSignupRequest.getUsername())).willReturn(true);
 
@@ -75,6 +79,7 @@ class MemberServiceTest {
       Long ownerId = memberService.signup(memberSignupRequest);
 
       // then
+      verify(memberSettingsRepository).save(any(MemberSettings.class));
       verify(eventPublisher).publishEvent(any(MemberSignupEvent.class));
       assertThat(ownerId).isEqualTo(1L);
     }

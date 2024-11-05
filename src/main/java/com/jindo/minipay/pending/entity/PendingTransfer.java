@@ -1,12 +1,10 @@
-package com.jindo.minipay.settlement.entity;
+package com.jindo.minipay.pending.entity;
 
 import com.jindo.minipay.global.entity.BaseTimeEntity;
 import com.jindo.minipay.member.entity.Member;
-import com.jindo.minipay.settlement.type.SettlementType;
-import jakarta.persistence.Column;
+import com.jindo.minipay.pending.type.PendingStatus;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,22 +20,21 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Settlement extends BaseTimeEntity {
+public class PendingTransfer extends BaseTimeEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(nullable = false)
-  private Member requester;
+  private Member sender;
 
-  private long totalAmount;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(nullable = false)
+  private Member receiver;
 
-  private long supportsAmount;
+  private long amount;
 
-  @Column(nullable = false)
-  @Enumerated(EnumType.STRING)
-  private SettlementType settlementType;
-
+  private PendingStatus status;
 }

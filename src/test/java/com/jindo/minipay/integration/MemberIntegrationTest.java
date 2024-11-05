@@ -9,6 +9,7 @@ import com.jindo.minipay.account.checking.repository.CheckingAccountRepository;
 import com.jindo.minipay.member.dto.MemberSignupRequest;
 import com.jindo.minipay.member.entity.Member;
 import com.jindo.minipay.member.repository.MemberRepository;
+import com.jindo.minipay.member.repository.MemberSettingsRepository;
 import io.restassured.RestAssured;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -24,10 +25,13 @@ class MemberIntegrationTest extends IntegrationTestSupport {
   MemberRepository memberRepository;
 
   @Autowired
+  MemberSettingsRepository memberSettingsRepository;
+
+  @Autowired
   CheckingAccountRepository checkingAccountRepository;
 
   @Test
-  @DisplayName("회원 가입 요청이 들어오면 회원을 등록하고, 해당 회원의 메인 계좌가 생성된다.")
+  @DisplayName("회원 가입 요청이 들어오면 회원을 등록하고, 회원세팅 엔티티 및 메인 계좌가 생성된다.")
   void signup() {
     String username = "testUser";
 
@@ -50,6 +54,8 @@ class MemberIntegrationTest extends IntegrationTestSupport {
     Optional<Member> savedMember = memberRepository.findByUsername(username);
     assertThat(savedMember).isPresent();
     assertThat(savedMember.get().getUsername()).isEqualTo(username);
+
+    assertThat(memberSettingsRepository.findByMember(savedMember.get())).isPresent();
 
     Optional<CheckingAccount> savedCheckingAccount = checkingAccountRepository.findByOwnerId(
         savedMember.get().getId());
