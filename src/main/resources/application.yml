@@ -24,3 +24,8 @@ sonar:
   organization: dojindo
   projectKey: dojindo_minipay-jinyoung
   sources: .
+
+fcm:
+  project-id: minipay-remainder
+  service-account-key-path: firebase/key/minipay-remainder-key.json
+
