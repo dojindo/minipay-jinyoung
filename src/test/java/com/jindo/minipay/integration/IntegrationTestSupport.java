@@ -13,6 +13,7 @@ import com.jindo.minipay.member.entity.Member;
 import com.jindo.minipay.member.entity.MemberSettings;
 import com.jindo.minipay.member.repository.MemberRepository;
 import com.jindo.minipay.member.repository.MemberSettingsRepository;
+import com.jindo.minipay.notification.fcm.repository.FcmTokenRepository;
 import com.jindo.minipay.pending.repository.PendingTransferRepository;
 import com.jindo.minipay.settlement.repository.ParticipantSettlementRepository;
 import com.jindo.minipay.settlement.repository.SettlementRepository;
@@ -26,9 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles("test")
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 public abstract class IntegrationTestSupport {
 
@@ -51,6 +50,9 @@ public abstract class IntegrationTestSupport {
   protected ParticipantSettlementRepository participantSettlementRepository;
 
   @Autowired
+  protected FcmTokenRepository fcmTokenRepository;
+
+  @Autowired
   protected PendingTransferRepository pendingTransferRepository;
 
   @Autowired
@@ -69,6 +71,7 @@ public abstract class IntegrationTestSupport {
 
   @AfterEach
   void tearDown() {
+    fcmTokenRepository.deleteAllInBatch();
     memberSettingsRepository.deleteAllInBatch();
     participantSettlementRepository.deleteAllInBatch();
     settlementRepository.deleteAllInBatch();
