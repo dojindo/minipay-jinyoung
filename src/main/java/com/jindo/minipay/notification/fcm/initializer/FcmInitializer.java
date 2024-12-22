@@ -22,6 +22,7 @@ public class FcmInitializer {
 
   @PostConstruct
   public void initialize() throws IOException {
+    if (FirebaseApp.getApps().isEmpty()) {
       FirebaseOptions options = FirebaseOptions.builder()
           .setCredentials(GoogleCredentials.fromStream(
               new ClassPathResource(serviceAccountKeyPath).getInputStream()))
@@ -29,5 +30,6 @@ public class FcmInitializer {
           .build();
       FirebaseApp.initializeApp(options);
       log.info("FCM initialize() success");
+    }
   }
 }
