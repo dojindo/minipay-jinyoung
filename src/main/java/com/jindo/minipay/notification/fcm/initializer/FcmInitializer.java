@@ -21,15 +21,19 @@ public class FcmInitializer {
   private String projectId;
 
   @PostConstruct
-  public void initialize() throws IOException {
+  public void initialize() {
     if (FirebaseApp.getApps().isEmpty()) {
-      FirebaseOptions options = FirebaseOptions.builder()
-          .setCredentials(GoogleCredentials.fromStream(
-              new ClassPathResource(serviceAccountKeyPath).getInputStream()))
-          .setProjectId(projectId)
-          .build();
-      FirebaseApp.initializeApp(options);
-      log.info("FCM initialize() success");
+      try {
+        FirebaseOptions options = FirebaseOptions.builder()
+            .setCredentials(GoogleCredentials.fromStream(
+                new ClassPathResource(serviceAccountKeyPath).getInputStream()))
+            .setProjectId(projectId)
+            .build();
+        FirebaseApp.initializeApp(options);
+        log.info("FCM initialize() success");
+      } catch (IOException e) {
+        log.error("FCM initialize() IOException occurred");
+      }
     }
   }
 }
