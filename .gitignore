@@ -38,3 +38,5 @@ out/
 
 ### Firebase Key ###
 src/main/resources/firebase/key/
+
+resources/static/index.html
