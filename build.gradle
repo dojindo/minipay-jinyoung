@@ -65,6 +65,9 @@ def jacocoExcludePatterns = [
 		"**/*Filter*",
 		"**/*Resolver*",
 		"**/*Entity*",
+		// -- TODO : 알림 구현 시 제거
+		"**/*TestController*",
+		// --
 		"**/test/**",
 		"**/resources/**"
 ] + Qdomains
