@@ -1,8 +1,4 @@
 spring:
-  config:
-    activate:
-      on-profile: test
-
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/minipay?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
@@ -23,3 +19,7 @@ spring:
     redis:
       host: localhost
       port: 6379
+
+fcm:
+  project-id: minipay-remainder
+  service-account-key-path: firebase/key/minipay-remainder-key.json

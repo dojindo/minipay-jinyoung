@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<button id="getTokenButton">FCM 토큰 발급</button>
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+  import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-messaging.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyDWSjysEudIWFIKQkzdJNtFTbUS5JRFFbo",
+    authDomain: "minipay-remainder.firebaseapp.com",
+    projectId: "minipay-remainder",
+    storageBucket: "minipay-remainder.firebasestorage.app",
+    messagingSenderId: "668137417319",
+    appId: "1:668137417319:web:bd1098d03c3fcaba1642c2",
+    measurementId: "G-V2R2T3R350"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const messaging = getMessaging(app);
+
+  // 버튼 클릭 시 FCM 토큰 발급 및 서버로 전송
+  document.getElementById('getTokenButton').addEventListener('click', () => {
+    // FCM 토큰 요청
+    getToken(messaging, { vapidKey: "BO4YHW3as_rzAXYznyexAc6SIQXqFCjaTtIG6cXykG71BEO7UscZ8YF-QVE5TNKzo7zrA-tUciXr3SnBMAF9MqM" })
+    .then((currentToken) => {
+      if (currentToken) {
+        console.log("FCM Token:", currentToken);
+        // 서버로 토큰 등록 요청
+        fetch('/fcm/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ token: currentToken, memberId: 1 }) // 예시로 memberId 1 사용
+        })
+        .then(data => {
+          console.log("서버 응답:", data);
+        })
+        .catch(error => {
+          console.error("서버 요청 실패:", error);
+        });
+      } else {
+        console.log("FCM 토큰을 발급할 수 없습니다.");
+      }
+    })
+    .catch((err) => {
+      console.error("FCM 토큰 발급 실패:", err);
+    });
+  });
+</script>
+</body>
+</html>

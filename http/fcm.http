@@ -1,0 +1,9 @@
+### 토큰 방식 메시지 전송 테스트
+POST http://localhost:8080/fcm/test
+Content-Type: application/json
+
+{
+  "memberId": 1,
+  "title": "테스트 타이틀",
+  "content": "테스트 내용"
+}

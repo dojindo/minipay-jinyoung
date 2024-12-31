@@ -33,6 +33,11 @@ jobs:
           redis-version: "7.2"
 #        run: redis-cli ping
 
+      - name: Decode and Setup FCM key file
+        run: |
+          mkdir -p src/main/resources/firebase/key
+          echo ${{ secrets.FIREBASE_SERVICE_KEY_BASE64_ENCODE }} | base64 -d > src/main/resources/firebase/key/minipay-remainder-key.json
+
       - name: Cache SonarCloud packages
         uses: actions/cache@v3
         with:
@@ -49,4 +54,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          FCM_PROJECT_ID: ${{ secrets.FCM_PROJECT_ID }}
         run: ./gradlew build sonar --info

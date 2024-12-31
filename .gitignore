@@ -35,3 +35,14 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Firebase Key ###
+src/main/resources/firebase/key/
+
+### FCM test template ###
+src/main/resources/static/fcm_test.html
+src/main/resources/static/firebase-messaging-sw.js
+
+### application configuration ###
+src/main/resources/application.yml
+src/test/resources/application-*.yml
