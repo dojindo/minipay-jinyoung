@@ -25,7 +25,7 @@ public class FcmService {
 
   private final FcmTokenRepository fcmTokenRepository;
   private final MemberRepository memberRepository;
-  private final FireMessageSender fireMessageSender;
+  private final FirebaseMessageSender firebaseMessageSender;
 
   public void registerToken(FcmTokenRegisterRequest request) {
     Member member = getMember(request.getMemberId());
@@ -58,7 +58,7 @@ public class FcmService {
 
     String response;
     try {
-      response = fireMessageSender.send(message);
+      response = firebaseMessageSender.send(message);
     } catch (FirebaseMessagingException e) {
       log.error("FCM message send Failed " + e);
       throw new CustomException(FCM_MESSAGE_SEND_ERROR, e);

@@ -6,7 +6,7 @@ import com.google.firebase.messaging.Message;
 import org.springframework.stereotype.Component;
 
 @Component
-public class FireMessageSender {
+public class FirebaseMessageSender {
 
   public String send(Message message) throws FirebaseMessagingException {
     return FirebaseMessaging.getInstance().send(message);

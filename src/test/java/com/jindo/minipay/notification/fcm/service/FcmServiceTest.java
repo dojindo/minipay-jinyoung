@@ -40,7 +40,7 @@ class FcmServiceTest {
   MemberRepository memberRepository;
 
   @Mock
-  FireMessageSender fireMessageSender;
+  FirebaseMessageSender firebaseMessageSender;
 
   @Nested
   @DisplayName("FCM 토큰 등록")
@@ -146,7 +146,7 @@ class FcmServiceTest {
       // when
       when(memberRepository.findById(dto.getMemberId())).thenReturn(Optional.of(member));
       when(fcmTokenRepository.findByMember(member)).thenReturn(Optional.of(fcmToken));
-      when(fireMessageSender.send(any(Message.class))).thenThrow(FirebaseMessagingException.class);
+      when(firebaseMessageSender.send(any(Message.class))).thenThrow(FirebaseMessagingException.class);
 
       // then
       Assertions.assertThatThrownBy(() -> fcmService.sendNotification(dto))
@@ -171,12 +171,12 @@ class FcmServiceTest {
       // when
       when(memberRepository.findById(dto.getMemberId())).thenReturn(Optional.of(member));
       when(fcmTokenRepository.findByMember(member)).thenReturn(Optional.of(fcmToken));
-      when(fireMessageSender.send(any(Message.class))).thenReturn("success-response");
+      when(firebaseMessageSender.send(any(Message.class))).thenReturn("success-response");
 
       fcmService.sendNotification(dto);
 
       // then
-      verify(fireMessageSender).send(any(Message.class));
+      verify(firebaseMessageSender).send(any(Message.class));
     }
   }
 }
