@@ -2,9 +2,12 @@ package com.jindo.minipay.notification.fcm.service;
 
 import static com.jindo.minipay.global.exception.ErrorCode.FCM_TOKEN_NOT_FOUND;
 import static com.jindo.minipay.global.exception.ErrorCode.MEMBER_NOT_FOUND;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
 import com.jindo.minipay.global.exception.CustomException;
 import com.jindo.minipay.member.entity.Member;
 import com.jindo.minipay.member.repository.MemberRepository;
@@ -34,6 +37,9 @@ class FcmServiceTest {
 
   @Mock
   MemberRepository memberRepository;
+
+  @Mock
+  FireMessageSender fireMessageSender;
 
   @Nested
   @DisplayName("FCM 토큰 등록")
@@ -120,6 +126,31 @@ class FcmServiceTest {
       Assertions.assertThatThrownBy(() -> fcmService.sendNotification(dto))
           .isInstanceOf(CustomException.class)
           .hasMessage(FCM_TOKEN_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("성공")
+    void success_fcm_send_notification() throws FirebaseMessagingException {
+      // given
+      Member member = Member.builder()
+          .id(1L)
+          .build();
+
+      FcmToken fcmToken = FcmToken.builder()
+          .id(1L)
+          .token("dummy token")
+          .member(member)
+          .build();
+
+      // when
+      when(memberRepository.findById(dto.getMemberId())).thenReturn(Optional.of(member));
+      when(fcmTokenRepository.findByMember(member)).thenReturn(Optional.of(fcmToken));
+      when(fireMessageSender.send(any(Message.class))).thenReturn("success-response");
+
+      fcmService.sendNotification(dto);
+
+      // then
+      verify(fireMessageSender).send(any(Message.class));
     }
   }
 }
