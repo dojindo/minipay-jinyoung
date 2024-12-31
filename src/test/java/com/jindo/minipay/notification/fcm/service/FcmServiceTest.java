@@ -1,5 +1,6 @@
 package com.jindo.minipay.notification.fcm.service;
 
+import static com.jindo.minipay.global.exception.ErrorCode.FCM_MESSAGE_SEND_ERROR;
 import static com.jindo.minipay.global.exception.ErrorCode.FCM_TOKEN_NOT_FOUND;
 import static com.jindo.minipay.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 import static org.mockito.ArgumentMatchers.any;
@@ -126,6 +127,31 @@ class FcmServiceTest {
       Assertions.assertThatThrownBy(() -> fcmService.sendNotification(dto))
           .isInstanceOf(CustomException.class)
           .hasMessage(FCM_TOKEN_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("실패 - Firebase messaging 전송 에러")
+    void fail_fcm_send_notification_firebase_messaging_error() throws FirebaseMessagingException {
+      // given
+      Member member = Member.builder()
+          .id(1L)
+          .build();
+
+      FcmToken fcmToken = FcmToken.builder()
+          .id(1L)
+          .token("dummy token")
+          .member(member)
+          .build();
+
+      // when
+      when(memberRepository.findById(dto.getMemberId())).thenReturn(Optional.of(member));
+      when(fcmTokenRepository.findByMember(member)).thenReturn(Optional.of(fcmToken));
+      when(fireMessageSender.send(any(Message.class))).thenThrow(FirebaseMessagingException.class);
+
+      // then
+      Assertions.assertThatThrownBy(() -> fcmService.sendNotification(dto))
+          .isInstanceOf(CustomException.class)
+          .hasMessage(FCM_MESSAGE_SEND_ERROR.getMessage());
     }
 
     @Test
