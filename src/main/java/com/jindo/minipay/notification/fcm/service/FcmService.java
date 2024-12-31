@@ -4,7 +4,6 @@ import static com.jindo.minipay.global.exception.ErrorCode.FCM_MESSAGE_SEND_ERRO
 import static com.jindo.minipay.global.exception.ErrorCode.FCM_TOKEN_NOT_FOUND;
 import static com.jindo.minipay.global.exception.ErrorCode.MEMBER_NOT_FOUND;
 
-import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
@@ -26,6 +25,7 @@ public class FcmService {
 
   private final FcmTokenRepository fcmTokenRepository;
   private final MemberRepository memberRepository;
+  private final FireMessageSender fireMessageSender;
 
   public void registerToken(FcmTokenRegisterRequest request) {
     Member member = getMember(request.getMemberId());
@@ -58,7 +58,7 @@ public class FcmService {
 
     String response;
     try {
-      response = FirebaseMessaging.getInstance().send(message);
+      response = fireMessageSender.send(message);
     } catch (FirebaseMessagingException e) {
       log.error("FCM message send Failed " + e);
       throw new CustomException(FCM_MESSAGE_SEND_ERROR, e);
